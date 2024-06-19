@@ -1,0 +1,27 @@
+// Copyright (c) 2024, Nardoritos. All rights reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "CombatInterface.generated.h"
+
+// This class does not need to be modified.
+UINTERFACE(MinimalAPI)
+class UCombatInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/**
+ * 
+ */
+class AURA_API ICombatInterface
+{
+	GENERATED_BODY()
+
+public:
+
+	virtual int32 GetPlayerLevel();
+	
+};

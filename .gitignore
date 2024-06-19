@@ -3,6 +3,7 @@ DerivedDataCache
 Intermediate
 Saved
 Build
+.idea
 
 .vscode
 .vscode
@@ -14,4 +15,3 @@ Build
 *.suo
 *.xcodeproj
 *.xcworkspace
-.idea
