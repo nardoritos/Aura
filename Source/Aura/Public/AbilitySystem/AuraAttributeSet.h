@@ -93,7 +93,10 @@ public:
 	FGameplayAttributeData Vigor;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Vigor)
 
-	// Secondary Attributes
+	/*
+	 * Secondary Attributes 
+	 */
+	
 	
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Armor, Category = "Secondary Attributes")
 	FGameplayAttributeData Armor;
@@ -136,10 +139,6 @@ public:
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana)
 	
 	/*
-	 * Secondary Attributes 
-	 */
-	
-	/*
 	 * Vital Attributes
 	 */
 
@@ -150,8 +149,15 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Mana, Category = "Vital Attributes")
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana)
-	
 
+	/* 
+	 * Meta Attributes
+	 */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage)
+	
 	// Replication Notifiers
 	
 	UFUNCTION()
@@ -205,5 +211,5 @@ public:
 private:
 
 	void SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const;
-	
+	void ShowFloatingText(const FEffectProperties& Props, float Damage) const;
 };
