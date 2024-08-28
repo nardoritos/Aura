@@ -4,6 +4,7 @@
 #include "AbilitySystem/ExecCalc/ExecCalc_Damage.h"
 
 #include "AbilitySystemComponent.h"
+#include "AuraAbilityTypes.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
@@ -78,8 +79,13 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef, EvaluationParameters, TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(TargetBlockChance, 0.0f);
 
+	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
+	
 	// Determining if it was a blocked hit
 	const bool bBlocked = FMath::RandRange(1,100) < TargetBlockChance;
+	
+	UAuraAbilitySystemLibrary::SetIsBlockedHit(EffectContextHandle, bBlocked);
+	
 	Damage = bBlocked ? Damage / 2.f : Damage;
 		
 	// Capturing Target Armor
@@ -121,19 +127,21 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	float SourceCriticalHitChance = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitChanceDef, EvaluationParameters, SourceCriticalHitChance);
 	SourceCriticalHitChance = FMath::Max<float>(SourceCriticalHitChance, 0.0f);
+
+	// Capturing Source Critical Hit Damage
+	float SourceCriticalHitDamage = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitDamageDef, EvaluationParameters, SourceCriticalHitDamage);
+	SourceCriticalHitDamage = FMath::Max<float>(SourceCriticalHitDamage, 0.f);
 	
 	const float EffectiveCriticalHitChance = SourceCriticalHitChance- TargetCriticalHitResistanceChance * CriticalHitResistanceCoefficient;
 	
 	const bool bCriticalHit = FMath::RandRange(1,100) < EffectiveCriticalHitChance;
-	if(bCriticalHit)
-	{
-		// Capturing Source Critical Hit Damage
-		float SourceCriticalHitDamage = 0.f;
-		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitDamageDef, EvaluationParameters, SourceCriticalHitDamage);
-		SourceCriticalHitDamage = FMath::Max<float>(SourceCriticalHitDamage, 0.f);
 
-		Damage = (Damage * 2.f) + SourceCriticalHitDamage; 
-	}
+	UAuraAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, bCriticalHit);
+	
+	Damage = bCriticalHit ? 2.f * Damage + SourceCriticalHitDamage : Damage; 
+	
+
 	
 	const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);
 	
