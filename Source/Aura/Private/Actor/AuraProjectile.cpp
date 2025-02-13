@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Aura/Aura.h"
 #include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
@@ -49,6 +50,7 @@ void AAuraProjectile::Destroyed()
 	if(!bHit && !HasAuthority())
 	{
 		PlayCosmeticEffects();
+		bHit = true;
 	}
 	Super::Destroyed();
 }
@@ -58,9 +60,17 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 {
 
 	if (!DamageEffectSpecHandle.Data.IsValid() || DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser() == OtherActor)
-		return
+		return;
+
+	if (!UAuraAbilitySystemLibrary::IsNotFriend(DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser(),  OtherActor))
+		return;
 	
-	PlayCosmeticEffects();
+	if (!bHit)
+	{
+		PlayCosmeticEffects();
+		bHit = true;
+	}
+	
 	if(HasAuthority())
 	{
 		if(UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
@@ -75,11 +85,13 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	}
 }
 
-void AAuraProjectile::PlayCosmeticEffects()
+const void AAuraProjectile::PlayCosmeticEffects()
 {
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation(), FRotator::ZeroRotator);
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
 
+	UE_LOG(LogTemp, Warning, TEXT("Cosmetic Effect played"))
+	
 	if (LoopingSoundComponent) LoopingSoundComponent->Stop();
 }
 
