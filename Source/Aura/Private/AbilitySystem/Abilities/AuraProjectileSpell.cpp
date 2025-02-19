@@ -31,6 +31,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 
 	if (bOverridePitch)
 		Rotation.Pitch = PitchOverride;
+
 	
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(SocketLocation);

@@ -7,7 +7,10 @@
 #include "GameplayTagContainer.h"
 #include "OverlayWidgetController.generated.h"
 
+class UAuraAbilitySystemComponent;
+class UAbilityInfo;
 struct FGameplayAttribute;
+struct FAuraAbilityInfo;
 
 USTRUCT(BlueprintType)
 struct FUIWidgetRow : public FTableRowBase
@@ -31,8 +34,6 @@ struct FOnAttributeChangeData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature, FUIWidgetRow, Row);
-
-
 
 /**
  * 
@@ -62,16 +63,25 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;
 
+	UPROPERTY(BlueprintAssignable, Category = "GAS|XP")
+	FOnAttributeChangedSignature OnXPPercentChangedDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "GAS|Level")
+	FOnPlayerStatChangedSignature OnPlayerLevelChangedDelegate;
+
 	
 protected:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data", meta = (RequiredAssetDataTags = "RowStructure=/Script/Aura.UIWidgetRow"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data", meta = (RequiredAssetDataTags = "RowStructure=/Script/Aura.UIWidgetRow"))
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
-
+	
 	template<typename T>
 	T* GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag);
 
 	void BindAttributeChange(FGameplayAttribute Attribute, FOnAttributeChangedSignature& AttributeData);
+
+	void OnXPChanged(const int32 NewXP);
+	
 	
 };
 
