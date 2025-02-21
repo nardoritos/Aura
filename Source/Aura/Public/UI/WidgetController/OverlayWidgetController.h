@@ -82,7 +82,7 @@ protected:
 
 	void OnXPChanged(const int32 NewXP);
 	
-	
+	void OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& SlotTag, const FGameplayTag& PrevSlot) const;
 };
 
 template <typename T>

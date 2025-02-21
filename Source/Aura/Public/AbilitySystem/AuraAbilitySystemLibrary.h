@@ -3,10 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/AbilityInfo.h"
 #include "Data/CharacterClassInfo.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+class UAuraAbilitySystemComponent;
+struct FAuraAbilityInfo;
+struct FGameplayTag;
 class UAbilityInfo;
 class AAuraHUD;
 class USpellMenuWidgetController;
@@ -14,6 +18,8 @@ class UAttributeMenuWidgetController;
 class UOverlayWidgetController;
 class UAbilitySystemComponent;
 struct FWidgetControllerParams;
+
+
 /**
  * 
  */
@@ -69,5 +75,15 @@ public:
 	static bool IsNotFriend(AActor* FirstActor,  AActor* SecondActor);
 
 	
-	static int32 GetXPRewardForCharacterClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel); 
+	static int32 GetXPRewardForCharacterClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
+	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|Utils")
+	static void GetAbilityDescription(const UObject* WorldContextObject, UAuraAbilitySystemComponent* ASC,
+		const FGameplayTag& AbilityTag, const int32 Level, FString& OutDescription, FString& OutNextLevelDescription);
+
+
+private:
+	
+	static void FormatAbilityDescriptionAtLevel(UGameplayAbility* Ability, const FAuraAbilityInfo& AbilityInfo, const int32 Level, FText& OutDescription);
+	
 };

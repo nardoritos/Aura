@@ -4,10 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "ScalableFloat.h"
 #include "Engine/DataAsset.h"
 #include "AbilityInfo.generated.h"
 
 class UGameplayAbility;
+
+UENUM(BlueprintType)
+enum EAbilityDescriptionAdditionalDetails
+{
+	None,
+	NumProjectiles
+};
 
 USTRUCT(BlueprintType)
 struct FAuraAbilityInfo
@@ -27,16 +35,46 @@ struct FAuraAbilityInfo
 	FGameplayTag CooldownTag = FGameplayTag();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag DamageTypeTag = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag AbilityType = FGameplayTag();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<const UTexture2D> Icon = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<const UMaterialInterface> BackgroundMaterial = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FString Name;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
+	FString Description;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
+	FString NextDescription;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
+	FString LockedDescription;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
+	TMap<int32 , FString> SpecificLevelDescription;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
+	TMap<TEnumAsByte<EAbilityDescriptionAdditionalDetails>, FScalableFloat> AdditionalDetails;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 LevelRequirement = 0;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayAbility> Ability;
+
+	FString GetDescription(const int32 InLevel) const;
+	
+	// Num Projectiles
+	float GetSpecialAttribute(const int32 Level, const EAbilityDescriptionAdditionalDetails AttributeToFind) const;
+	
 };
 
 /**
@@ -53,5 +91,5 @@ public:
 	TArray<FAuraAbilityInfo> AbilityInformation;
 
 	FAuraAbilityInfo FindAbilityInfoForTag(const FGameplayTag& AbilityTag, bool bLogNotFound = false) const;
-	
+
 };

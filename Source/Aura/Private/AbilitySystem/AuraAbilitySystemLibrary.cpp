@@ -5,6 +5,11 @@
 
 #include "AbilitySystemComponent.h"
 #include "AuraAbilityTypes.h"
+#include "AuraGameplayTags.h"
+#include "AuraNamedStructs.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/Abilities/AuraDamageGameplayAbility.h"
+#include "AbilitySystem/Data/AbilityInfo.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -126,6 +131,113 @@ int32 UAuraAbilitySystemLibrary::GetXPRewardForCharacterClassAndLevel(const UObj
 	const float XPReward = Info.XPReward.GetValueAtLevel(CharacterLevel);
 
 	return static_cast<int32>(XPReward);
+}
+
+void UAuraAbilitySystemLibrary::GetAbilityDescription(const UObject* WorldContextObject, UAuraAbilitySystemComponent* ASC,
+		const FGameplayTag& AbilityTag, const int32 Level, FString& OutDescription, FString& OutNextLevelDescription)
+{
+	const FAuraAbilityInfo Info = GetAbilityInfo(WorldContextObject)->FindAbilityInfoForTag(AbilityTag);
+	
+	FText Description = FText::FromString(Info.GetDescription(Level));
+	FText NextLevelDescription = FText::FromString(Info.NextDescription);
+	FText LockedDescription = FText::FromString(Info.LockedDescription);
+	
+	UGameplayAbility* Ability = Info.Ability.GetDefaultObject();
+
+	FText CommonDescription = FText::FromString(""
+		"<Default>Cooldown: </><Cooldown>{_CD0}s</>\n"
+		"<Default>Cost: </><ManaCost>{_Mana0}</>");
+	
+	FText CommonNextLevelDescription = FText::FromString(""
+		"<Default>Cooldown: </><Old>{_CD0}s</>-><Cooldown>{_CD1}s</>\n"
+		"<Default>Cost: </><Old>{_Mana0}</>-><ManaCost>{_Mana1}</>"); 
+	
+	
+	if (const FGameplayAbilitySpec* AbilitySpec = ASC->GetSpecFromAbilityTag(AbilityTag))
+	{
+		if(Cast<UAuraGameplayAbility>(AbilitySpec->Ability))
+		{
+			FormatAbilityDescriptionAtLevel(Ability, Info, Level, Description);
+			FormatAbilityDescriptionAtLevel(Ability, Info, Level, NextLevelDescription);
+			FormatAbilityDescriptionAtLevel(Ability, Info, Level, CommonDescription);
+			FormatAbilityDescriptionAtLevel(Ability, Info, Level, CommonNextLevelDescription);
+			
+			// Ability is Eligible, Unlocked or Equipped
+			OutDescription = FString::Printf(TEXT(
+				"<Title>%s</>\n"
+				"<SubTitle>Level </><SubTitle>%i</>\n\n"
+				"%s\n\n"
+				"%s"
+				
+				),
+				*Info.Name,
+				Level,
+				*Description.ToString(),
+				*CommonDescription.ToString()
+				);
+			OutNextLevelDescription = FString::Printf(TEXT(
+				"<Title>NEXT LEVEL:</>\n"
+				"<SubTitle>Level </><Old>%i</><SubTitle>-></><Level>%i</>\n\n"
+				"%s\n\n"
+				"%s"
+				
+				),
+				Level,
+				Level + 1,
+				*NextLevelDescription.ToString(),
+				*CommonNextLevelDescription.ToString()
+				);
+			return;
+		}
+	}
+
+	if (!AbilityTag.IsValid() || AbilityTag.MatchesTagExact(FAuraGameplayTags::Get().Abilities_None))
+	{
+		OutDescription = FString();
+	}
+	else
+	{
+		FormatAbilityDescriptionAtLevel(Ability, Info, Info.LevelRequirement, LockedDescription);
+		// Ability is Locked
+		OutDescription = FString::Printf(
+			TEXT(
+				"<Locked>%s</>\n"
+			),
+			*LockedDescription.ToString()
+		);
+	}	
+	OutNextLevelDescription = FString();
+		
+}
+
+void UAuraAbilitySystemLibrary::FormatAbilityDescriptionAtLevel(UGameplayAbility* Ability, const FAuraAbilityInfo& AbilityInfo, const int32 Level, FText& OutDescription)
+{
+	const FAuraNamedArguments Args;
+	
+	if (UAuraDamageGameplayAbility* DamageAbility = Cast<UAuraDamageGameplayAbility>(Ability))
+	{
+		OutDescription = FText::FormatNamed(
+			OutDescription,
+			Args._Level0, Level,
+			Args._Level1, Level + 1,
+			Args._FDmg0, DamageAbility->GetRoundedDamageAtLevel(Level, AbilityInfo.DamageTypeTag),
+			Args._FDmg1, DamageAbility->GetRoundedDamageAtLevel(Level + 1, AbilityInfo.DamageTypeTag),
+			Args._CD0, DamageAbility->GetCooldownAtLevel(Level),
+			Args._CD1, DamageAbility->GetCooldownAtLevel(Level + 1),
+			Args._Mana0, -DamageAbility->GetManaCostAtLevel(Level),
+			Args._Mana1, -DamageAbility->GetManaCostAtLevel(Level + 1),
+			Args._NumProjectiles0, AbilityInfo.GetSpecialAttribute(Level, NumProjectiles),
+			Args._NumProjectiles1, AbilityInfo.GetSpecialAttribute(Level + 1, NumProjectiles)
+		);
+	}
+	else
+	{
+		OutDescription = FText::FormatNamed(
+			OutDescription,
+			Args._Level0, Level,
+			Args._Level1, Level + 1					
+		);
+	}
 }
 
 UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)

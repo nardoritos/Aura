@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CauseDamage(AActor* TargetActor);
 	
+	int32 GetRoundedDamageAtLevel(int32 Level,  const FGameplayTag& DamageTypeTag);
+
+	
 protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -30,4 +33,6 @@ protected:
 
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;
+
+
 };

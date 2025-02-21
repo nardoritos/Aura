@@ -31,3 +31,12 @@ FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const
 	}
 	return FTaggedMontage();
 }
+
+int32 UAuraDamageGameplayAbility::GetRoundedDamageAtLevel(int32 Level, const FGameplayTag& DamageTypeTag)
+{
+	checkf(DamageTypes.Contains(DamageTypeTag), TEXT("GameplayAbility %s does not contain DamageType %s"),
+		*GetNameSafe(this), *DamageTypeTag.ToString());
+	
+	return DamageTypes[DamageTypeTag].GetValueAtLevel(Level);
+}
+

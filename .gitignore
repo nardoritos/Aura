@@ -15,3 +15,5 @@ Build
 *.suo
 *.xcodeproj
 *.xcworkspace
+*.DotSettings
+*.DotSettings.user
