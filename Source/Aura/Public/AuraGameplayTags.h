@@ -62,6 +62,17 @@ public:
 	FGameplayTag Damage_Arcane;
 	FGameplayTag Damage_Physical;
 
+	// Debuff Types
+	FGameplayTag Debuff_Burn;
+	FGameplayTag Debuff_Stun;
+	FGameplayTag Debuff_Curse;
+	FGameplayTag Debuff_Bleed;
+
+	// Debuff Details
+	FGameplayTag Debuff_Chance;
+	FGameplayTag Debuff_Damage;
+	FGameplayTag Debuff_Duration;
+	FGameplayTag Debuff_Frequency;
 	
 	// Ability Types
 	FGameplayTag Abilities_None;
@@ -105,8 +116,18 @@ public:
 	
 	// Maps each Damage Type Tag with their own Resistance Tag
 	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
-	
+
+	// Maps each Damage Type Tag with their own Debuff Tag 
+	TMap<FGameplayTag, FGameplayTag> DamageTypesToDebuffs;
+
+	// Hit React Tag
 	FGameplayTag Effects_HitReact;
+
+	// Player Blocking Tags
+	FGameplayTag Player_Block_InputPressed;
+	FGameplayTag Player_Block_InputHeld;
+	FGameplayTag Player_Block_InputReleased;
+	FGameplayTag Player_Block_CursorTrace;
 	
 private:
     static FAuraGameplayTags GameplayTags;

@@ -3,12 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
 #include "GameplayTagContainer.h"
 #include "UObject/Interface.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "CombatInterface.generated.h"
 
 class UNiagaraSystem;
+class UAnimMontage;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnASCRegistered, UAbilitySystemComponent*)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, AActor*, DeadActor);
+
 
 USTRUCT(BlueprintType)
 struct FTaggedMontage
@@ -58,7 +64,7 @@ public:
 	UAnimMontage* GetHitReactMontage();
 
 	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void Die() = 0;
+	virtual void Die(const FVector& DeathImpulse) = 0;
 
 	UFUNCTION(BLueprintNativeEvent, BlueprintCallable)
 	bool IsDead() const;
@@ -86,5 +92,15 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	ECharacterClass GetCharacterClass();
+	
+	virtual FOnASCRegistered GetOnASCRegisteredDelegate() = 0;
+
+	virtual FOnDeath GetOnDeathDelegate() = 0;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SetInShockLoop(bool bInLoop);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UMeshComponent* GetWeapon();
 	
 };

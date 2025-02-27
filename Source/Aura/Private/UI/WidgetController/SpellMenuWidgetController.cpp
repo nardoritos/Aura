@@ -29,7 +29,8 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 				ShouldEnableButtons(StatusTag, CurrentSpellPoints, bEnableSpendPointsButton, bShouldEnableEquipButton);
 				
 				FString AbilityDescription, NextLevelAbilityDescription;
-				UAuraAbilitySystemLibrary::GetAbilityDescription(this, GetAuraASC(), SelectedAbility.Ability, SelectedAbility.Level, AbilityDescription, NextLevelAbilityDescription);
+				
+				UAuraAbilitySystemLibrary::GetAbilityDescription(AbilityInfo, GetAuraASC(), SelectedAbility.Ability, SelectedAbility.Level, AbilityDescription, NextLevelAbilityDescription);
 	
 				SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPointsButton, bShouldEnableEquipButton, AbilityDescription, NextLevelAbilityDescription);
 			}
@@ -56,7 +57,7 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 			ShouldEnableButtons(SelectedAbility.Status, CurrentSpellPoints, bEnableSpendPointsButton, bShouldEnableEquipButton);
 
 			FString AbilityDescription, NextLevelAbilityDescription;
-			UAuraAbilitySystemLibrary::GetAbilityDescription(this, GetAuraASC(), SelectedAbility.Ability, SelectedAbility.Level, AbilityDescription, NextLevelAbilityDescription);
+			UAuraAbilitySystemLibrary::GetAbilityDescription(AbilityInfo, GetAuraASC(), SelectedAbility.Ability, SelectedAbility.Level, AbilityDescription, NextLevelAbilityDescription);
 		
 			SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPointsButton, bShouldEnableEquipButton, AbilityDescription, NextLevelAbilityDescription);
 		});
@@ -99,7 +100,7 @@ void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityT
 	ShouldEnableButtons(AbilityStatus, SpellPoints, bEnableSpendPointsButton, bShouldEnableEquipButton);
 	
 	FString AbilityDescription, NextLevelAbilityDescription;
-	UAuraAbilitySystemLibrary::GetAbilityDescription(this, GetAuraASC(), SelectedAbility.Ability, SelectedAbility.Level, AbilityDescription, NextLevelAbilityDescription);
+	UAuraAbilitySystemLibrary::GetAbilityDescription(AbilityInfo, GetAuraASC(), SelectedAbility.Ability, SelectedAbility.Level, AbilityDescription, NextLevelAbilityDescription);
 				
 	SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPointsButton, bShouldEnableEquipButton, AbilityDescription, NextLevelAbilityDescription);
 }
@@ -114,13 +115,16 @@ FString USpellMenuWidgetController::SpellGlobeHovered(const FGameplayTag& Abilit
 	const bool bSpecValid = AbilitySpec != nullptr; 
 
 	int32 AbilityLevel = 0;
-	if (bTagValid && !bTagNone && bSpecValid)
+	if (bTagValid && !bTagNone)
 	{
-		AbilityLevel = AbilitySpec->Level;
+		if (bSpecValid) AbilityLevel = AbilitySpec->Level;
 	}
-	
+	else 
+	{
+		return FString("ERROR: Missing Ability");
+	}
 	FString AbilityDescription, EmptyString;
-	UAuraAbilitySystemLibrary::GetAbilityDescription(this, GetAuraASC(), AbilityTag, AbilityLevel, AbilityDescription, EmptyString);
+	UAuraAbilitySystemLibrary::GetAbilityDescription(AbilityInfo, GetAuraASC(), AbilityTag, AbilityLevel, AbilityDescription, EmptyString);
 
 	return AbilityDescription;
 }
@@ -168,7 +172,7 @@ void USpellMenuWidgetController::SpellRowGlobePressed(const FGameplayTag& SlotTa
 {
 	if (!bWaitingForEquipSelection) return;
 	// Check selected ability against the slot's ability type.
-	// Don't equip an offensive spell in a passive slot/vice-versa
+	// Don't equip an offensive spell in a passive slot/vice versa
 
 	const FGameplayTag& SelectedAbilityType = AbilityInfo->FindAbilityInfoForTag(SelectedAbility.Ability).AbilityType;
 	if (!SelectedAbilityType.MatchesTagExact(AbilityType)) return;

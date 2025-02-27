@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayEffectTypes.h"
+#include "AuraAbilityTypes.h"
 #include "GameFramework/Actor.h"
 #include "AuraProjectile.generated.h"
 
@@ -24,7 +24,10 @@ public:
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
-	FGameplayEffectSpecHandle DamageEffectSpecHandle;
+	FDamageEffectParams DamageEffectParams;
+
+	UPROPERTY()
+	TObjectPtr<USceneComponent> HomingTargetSceneComponent;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -32,7 +35,8 @@ protected:
 	
 	UFUNCTION()
 	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
+	void StopSound();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USphereComponent> Sphere;
 
@@ -55,5 +59,5 @@ private:
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> LoopingSoundComponent;
 	
-	const void PlayCosmeticEffects();
+	void OnHit();
 };
