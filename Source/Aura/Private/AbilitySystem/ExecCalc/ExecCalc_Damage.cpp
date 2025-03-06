@@ -48,6 +48,7 @@ static AuraDamageStatics DamageStatics()
 	static AuraDamageStatics DStatics;
 	return DStatics;
 }
+
 UExecCalc_Damage::UExecCalc_Damage()
 {
 	RelevantAttributesToCapture.Add(DamageStatics().ArmorDef);
@@ -99,7 +100,7 @@ void UExecCalc_Damage::DetermineDebuff(const FGameplayEffectCustomExecutionParam
 				const float DebuffDamage = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Damage, false,-1.f);
 				const float DebuffDuration = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Duration, false,-1.f);
 				const float DebuffFrequency = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Frequency, false,-1.f);
-
+				
 				UAuraAbilitySystemLibrary::SetDebuffDamage(ContextHandle, DebuffDamage);
 				UAuraAbilitySystemLibrary::SetDebuffDuration(ContextHandle, DebuffDuration);
 				UAuraAbilitySystemLibrary::SetDebuffFrequency(ContextHandle, DebuffFrequency);
@@ -144,7 +145,8 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		TargetPlayerLevel = ICombatInterface::Execute_GetPlayerLevel(TargetAvatar);
 	
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
-
+	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
+	
 	// Gather tags from Source and Target
 	const FGameplayTagContainer* SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	const FGameplayTagContainer* TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
@@ -174,6 +176,11 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		Resistance = FMath::Clamp(Resistance, 0.f, 100.f);
 
 		DamageTypeValue *= (100.f - Resistance) / 100.f;
+
+		if (UAuraAbilitySystemLibrary::IsRadialDamage(EffectContextHandle))
+		{
+			DamageTypeValue = CalculateRadialDamage(EffectContextHandle, DamageTypeValue, TargetAvatar);
+		}
 		
 		Damage += DamageTypeValue;
 	}
@@ -183,8 +190,6 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	float TargetBlockChance = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef, EvaluationParameters, TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(TargetBlockChance, 0.0f);
-
-	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
 
 	UAuraAbilitySystemLibrary::SetShouldHitReact(EffectContextHandle, true);
 	
@@ -254,4 +259,30 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);
 	
+}
+
+float UExecCalc_Damage::CalculateRadialDamage(const FGameplayEffectContextHandle& EffectContextHandle,
+	const float Damage, const AActor* TargetAvatar)
+{
+	FVector TargetLocation = TargetAvatar->GetActorLocation();
+	const FVector Origin = UAuraAbilitySystemLibrary::GetRadialDamageOrigin(EffectContextHandle);
+	TargetLocation.Z = Origin.Z; // TargetAvatar half height may be above the InnerRadius
+    
+	const float SquareDistance = FVector::DistSquared(TargetLocation, Origin);
+    
+	const float InnerRadius = UAuraAbilitySystemLibrary::GetRadialDamageInnerRadius(EffectContextHandle);
+	const float SquareInnerRadius = FMath::Square(InnerRadius);
+ 
+	const float OuterRadius = UAuraAbilitySystemLibrary::GetRadialDamageOuterRadius(EffectContextHandle);
+	const float SquareOuterRadius = FMath::Square(OuterRadius);
+    
+	if (SquareDistance <= SquareInnerRadius) return Damage;
+ 
+	const TRange<float> DistanceRange(SquareInnerRadius, SquareOuterRadius);
+	const TRange<float> DamageScaleRange(1.0f, 0.f);
+	const float DamageScale = 
+		FMath::GetMappedRangeValueClamped(DistanceRange, DamageScaleRange, SquareDistance);
+	const float RadialDamage = Damage * DamageScale;
+ 
+	return RadialDamage;
 }

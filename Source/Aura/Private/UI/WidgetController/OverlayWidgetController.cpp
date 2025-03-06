@@ -35,15 +35,15 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 
 	if(GetAuraASC())
 	{
-		GetAuraASC()->AbilityEquipped.AddUObject(this, &UOverlayWidgetController::OnAbilityEquipped);
+		GetAuraASC()->OnAbilityEquipped.AddUObject(this, &UOverlayWidgetController::OnAbilityEquipped);
 		
 		// If the abilities have already been given, skip Binding event
 		if (GetAuraASC()->bStartupAbilitiesGiven)
 			BroadcastAbilityInfo();
 		else
-			GetAuraASC()->AbilitiesGiven.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
+			GetAuraASC()->OnAbilitiesGiven.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
 	
-		GetAuraASC()->EffectAssetTags.AddLambda(
+		GetAuraASC()->OnEffectAssetTagsReceived.AddLambda(
 			[this](const FGameplayTagContainer& AssetTags)
 			{
 				for(const FGameplayTag& Tag : AssetTags)

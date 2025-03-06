@@ -23,4 +23,6 @@ public:
 
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 	                                    FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
+
+	static float CalculateRadialDamage(const FGameplayEffectContextHandle& EffectContextHandle, const float Damage, const AActor* TargetAvatar);
 };

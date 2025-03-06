@@ -21,8 +21,16 @@ struct FAuraNamedArguments
 
 	FString _FDmg0 = FString("_FDmg0"); // Current Damage
 	FString _FDmg1 = FString("_FDmg1"); // Next Damage
-
+	FString _FDmg0Half = FString("_FDmg0Half"); // Current Damage / 2
+	FString _FDmg1Half = FString("_FDmg1Half"); // Next Damage / 2
+	
 	FString _NumProjectiles0 = FString("_NumProjectiles0"); // Quantity of Projectiles 
-	FString _NumProjectiles1 = FString("_NumProjectiles1"); // Next Quantity of Projectiles 
+	FString _NumProjectiles1 = FString("_NumProjectiles1"); // Next Quantity of Projectiles
+	
+	FString _NumPropagatedTargets0 = FString("_NumPropagatedTargets0"); // Quantity of Propagated Targets 
+	FString _NumPropagatedTargets1 = FString("_NumPropagatedTargets1"); // Next Quantity of Propagated Targets
+	
+	FString _PropagatedDamage0 = FString("_PropagatedDamage0"); // Current Propagating Damage
+	FString _PropagatedDamage1 = FString("_PropagatedDamage1"); // Next Propagating Damage
 	
 };

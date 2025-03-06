@@ -75,6 +75,8 @@ public:
 	FGameplayTag Debuff_Frequency;
 	
 	// Ability Types
+	FGameplayTag Abilities;
+	
 	FGameplayTag Abilities_None;
 	
 	FGameplayTag Abilities_Attack;
@@ -90,17 +92,35 @@ public:
 	FGameplayTag Abilities_Type_Offensive;
 	FGameplayTag Abilities_Type_Passive;
 	FGameplayTag Abilities_Type_None;
-	
+
+	FGameplayTag Abilities_WaitingExecution;
 
 	// Ability Types->Fire
+	FGameplayTag Abilities_Fire;
 	FGameplayTag Abilities_Fire_FireBolt;
 
 	// Ability Types->Lightning
+	FGameplayTag Abilities_Lightning;
 	FGameplayTag Abilities_Lightning_Electrocute;
 
-	// Ability Cooldowns
+	// Ability Types->Arcane
+	FGameplayTag Abilities_Arcane;
+	FGameplayTag Abilities_Arcane_ArcaneShards;
+	
+	// Ability Cooldowns->Fire
 	FGameplayTag Cooldown_Fire_FireBolt;
+	
+	// Ability Cooldowns->Lightning
+	FGameplayTag Cooldown_Lightning_Electrocute;
 
+	// Ability Cooldowns->Arcane
+	FGameplayTag Cooldown_Arcane_ArcaneShards;
+	
+	// Passive Abilities
+	FGameplayTag Abilities_Passive_HaloOfProtection;
+	FGameplayTag Abilities_Passive_LifeSiphon;
+	FGameplayTag Abilities_Passive_ManaSiphon;
+	
 	// Combat Sockets Tags
 	FGameplayTag CombatSocket_Weapon;
 	FGameplayTag CombatSocket_RightHand;

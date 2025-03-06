@@ -146,9 +146,12 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 			if (UAuraAbilitySystemLibrary::ShouldHitReact(Props.EffectContextHandle))
 			{
 				// If the player Should Hit React (e.g. damage incoming from attacks, not debuffs), try to activate GA_HitReact
-				FGameplayTagContainer TagContainer;
-				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
-				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+				if (Props.TargetCharacter->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsBeingShocked(Props.TargetCharacter))
+				{
+					FGameplayTagContainer TagContainer;
+					TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
+					Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+				}
 
 				const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
 				if (!KnockbackForce.IsNearlyZero(1.f))
@@ -225,10 +228,19 @@ void UAuraAttributeSet::HandleDebuff(const FEffectProperties& Props)
 	Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
 	Effect->Period = DebuffFrequency;
 	Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
-	
+
+	const FGameplayTag DebuffTag = GameplayTags.DamageTypesToDebuffs[DamageType];	
 	FInheritedTagContainer TagContainer = FInheritedTagContainer();
 	UTargetTagsGameplayEffectComponent& Component = Effect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
-	TagContainer.Added.AddTag(GameplayTags.DamageTypesToDebuffs[DamageType]);
+	TagContainer.Added.AddTag(DebuffTag);
+	
+	if (DebuffTag.MatchesTagExact(GameplayTags.Debuff_Stun))
+	{
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_CursorTrace);
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputHeld);
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputReleased);
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputPressed);
+	}
 	Component.SetAndApplyTargetTagChanges(TagContainer);
 	
 	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
@@ -248,6 +260,13 @@ void UAuraAttributeSet::HandleDebuff(const FEffectProperties& Props)
 		const TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageType));
 		AuraContext->SetDamageType(DebuffDamageType);
 		AuraContext->SetShouldHitReact(false);
+
+		// Force Cancel every ability when Stunned
+		if (DebuffTag.MatchesTagExact(GameplayTags.Debuff_Stun))
+		{
+			const FGameplayTagContainer AbilitiesToCancelTags(GameplayTags.Abilities);
+			Props.TargetASC->CancelAbilities(&AbilitiesToCancelTags);
+		}
 		
 		Props.TargetASC->ApplyGameplayEffectSpecToSelf(*MutableSpec);
 	}

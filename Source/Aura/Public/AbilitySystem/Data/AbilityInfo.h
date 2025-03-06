@@ -14,7 +14,8 @@ UENUM(BlueprintType)
 enum EAbilityDescriptionAdditionalDetails
 {
 	None,
-	NumProjectiles
+	NumProjectiles,
+	NumPropagatedTargets
 };
 
 USTRUCT(BlueprintType)

@@ -17,6 +17,7 @@ AAuraProjectile::AAuraProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+	AActor::SetReplicateMovement(true);
 	
 	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");
 	SetRootComponent(Sphere);
@@ -32,7 +33,7 @@ AAuraProjectile::AAuraProjectile()
 	ProjectileMovement->MaxSpeed = 550.f;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 
-	AActor::SetReplicateMovement(true);
+	
 }
 
 void AAuraProjectile::BeginPlay()

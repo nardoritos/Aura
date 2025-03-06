@@ -16,7 +16,7 @@ class AURA_API UAuraGameplayAbility : public UGameplayAbility
 
 public:
 
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Input")
 	FGameplayTag StartupInputTag;
 
 	virtual FString GetDescription(int32 Level);

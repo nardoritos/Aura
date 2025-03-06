@@ -18,7 +18,7 @@ void USpellMenuWidgetController::BroadcastInitialValues()
 
 void USpellMenuWidgetController::BindCallbacksToDependencies()
 {
-	GetAuraASC()->AbilityStatusChange.AddLambda(
+	GetAuraASC()->OnAbilityStatusChanged.AddLambda(
 		[this](const FGameplayTag& AbilityTag, const FGameplayTag& StatusTag, int32 NewLevel)
 		{
 			if (SelectedAbility.Ability.MatchesTagExact(AbilityTag))
@@ -43,7 +43,7 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 			}
 		});
 
-	GetAuraASC()->AbilityEquipped.AddUObject(this, &USpellMenuWidgetController::OnAbilityEquipped);
+	GetAuraASC()->OnAbilityEquipped.AddUObject(this, &USpellMenuWidgetController::OnAbilityEquipped);
 	
 	// Binding to OnSpellPointsChanged
 	GetAuraPS()->OnSpellPointsChangedDelegate.AddLambda(
@@ -163,7 +163,7 @@ void USpellMenuWidgetController::EquipButtonPressed()
 	const FGameplayTag SelectedAbilityStatus = GetAuraASC()->GetStatusFromAbilityTag(SelectedAbility.Ability); 
 	if (SelectedAbilityStatus.MatchesTagExact(FAuraGameplayTags::Get().Abilities_Status_Equipped))
 	{
-		SelectedSlot = GetAuraASC()->GetInputTagFromAbilityTag(SelectedAbility.Ability);
+		SelectedSlot = GetAuraASC()->GetSlotTagFromAbilityTag(SelectedAbility.Ability);
 	}
 
 }

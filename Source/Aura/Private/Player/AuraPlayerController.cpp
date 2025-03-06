@@ -10,7 +10,10 @@
 #include "NavigationSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "Actor/MagicCircle.h"
+#include "Aura/Aura.h"
 #include "Aura/AuraLogChannels.h"
+#include "Components/DecalComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
@@ -31,7 +34,8 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	CursorTrace();
 
 	AutoRun();
-	
+
+	UpdateMagicCircleLocation();
 }
 
 void AAuraPlayerController::AutoRun()
@@ -56,6 +60,32 @@ void AAuraPlayerController::StopAutoRun()
 {
 	Spline->ClearSplinePoints();
 	bAutoRunning = false;
+}
+
+void AAuraPlayerController::UpdateMagicCircleLocation()
+{
+	if (IsValid(MagicCircle))
+	{
+		MagicCircle->SetActorLocation(CursorHit.ImpactPoint);
+	}
+}
+
+void AAuraPlayerController::ShowMagicCircle(UMaterialInterface* DecalMaterial)
+{
+	if (!IsValid(MagicCircle))
+	{
+		MagicCircle = GetWorld()->SpawnActor<AMagicCircle>(MagicCircleClass);
+		if (DecalMaterial)
+		{
+			MagicCircle->MagicCircleDecal.Get()->SetMaterial(0, DecalMaterial);
+		}
+	}
+}
+
+void AAuraPlayerController::HideMagicCircle()
+{
+	if (IsValid(MagicCircle))
+		MagicCircle->Destroy();
 }
 
 void AAuraPlayerController::BeginPlay()
@@ -123,7 +153,6 @@ void AAuraPlayerController::Move(const struct FInputActionValue& InputActionValu
 	if (APawn* ControlledPawn = GetPawn<APawn>())
 	{
 		if (bAutoRunning) StopAutoRun();
-		UE_LOG(LogAura, Warning, TEXT("Moving manually"))
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
@@ -140,7 +169,9 @@ void AAuraPlayerController::CursorTrace()
 		ThisActor = nullptr;
 		return;
 	}
-	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+
+	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_EXCLUDE_PLAYERS :  ECC_Visibility;
+	GetHitResultUnderCursor(TraceChannel, false, CursorHit);
 	if(!CursorHit.bBlockingHit) return;
 
 	LastActor = ThisActor;
@@ -202,11 +233,11 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					bAutoRunning = true;
 				}
 			}
-			if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased))
+			if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
 			{
-				return;
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
 			}
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
+			
 		}
 		FollowTime = 0.f;
 		bTargeting = false;

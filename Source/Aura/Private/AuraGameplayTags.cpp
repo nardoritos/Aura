@@ -260,6 +260,12 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	/* 
 	 * Abilities
 	 */
+
+	GameplayTags.Abilities = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities"),
+		FString("Abilities Base Tag")
+		);
+	
 	GameplayTags.Abilities_None = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Abilities.None"),
 		FString("No Ability - like the nullptr for AbilityTags")
@@ -315,11 +321,19 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Type Passive")
 		);
 
-	
+	GameplayTags.Abilities_WaitingExecution = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.WaitingExecution"),
+		FString("Tag for when an Activated Ability is Waiting for its Execution")
+		);
+
 	/*
 	 * Abilities->Fire
 	 */
-
+	GameplayTags.Abilities_Fire = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Fire"),
+		FString("Fire Ability Tag")
+		);
+	
 	GameplayTags.Abilities_Fire_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Abilities.Fire.FireBolt"),
 		FString("FireBolt Ability Tag")
@@ -328,12 +342,50 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	/*
 	 * Abilities->Lightning
 	 */
-
+	
+	GameplayTags.Abilities_Lightning = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Lightning"),
+		FString("Lightning Ability Tag")
+		);
+	
 	GameplayTags.Abilities_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Abilities.Lightning.Electrocute"),
 		FString("Electrocute Ability Tag")
 		);
+
+	/*
+	 * Abilities->Arcane
+	 */
+
+	GameplayTags.Abilities_Arcane = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Arcane"),
+		FString("Arcane Ability Tag")
+		);
+
+	GameplayTags.Abilities_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Arcane.ArcaneShards"),
+		FString("Arcane Shards Ability Tag")
+		);
+
+	/*
+	 * Passive Abilities
+	 */
 		
+	GameplayTags.Abilities_Passive_HaloOfProtection = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Passive.HaloOfProtection"),
+		FString("Halo Of Protection Passive Ability Tag")
+		);
+
+	GameplayTags.Abilities_Passive_LifeSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Passive.LifeSiphon"),
+		FString("Life Siphon Passive Ability Tag")
+		);
+
+	GameplayTags.Abilities_Passive_ManaSiphon = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Passive.ManaSiphon"),
+		FString("Mana Siphon Passive Ability Tag")
+		);
+	
 	/*
 	 * Cooldown
  	 */
@@ -342,7 +394,18 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Cooldown.Fire.FireBolt"),
 		FString("FireBolt Cooldown Tag")
 		);
-	
+
+	GameplayTags.Cooldown_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Cooldown.Lightning.Electrocute"),
+		FString("Electrocute Cooldown Tag")
+		);
+
+	GameplayTags.Cooldown_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Cooldown.Arcane.ArcaneShards"),
+		FString("Arcane Shards Cooldown Tag")
+		);
+
+		
 	/* 
 	 * Combat Sockets
 	 */

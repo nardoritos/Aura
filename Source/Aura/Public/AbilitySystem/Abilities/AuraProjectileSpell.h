@@ -34,5 +34,5 @@ protected:
 	TSubclassOf<AAuraProjectile> ProjectileClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 MaxNumProjectiles = 5;
+	FScalableFloat MaxNumProjectiles;
 };
