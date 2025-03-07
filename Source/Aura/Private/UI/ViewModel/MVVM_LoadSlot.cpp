@@ -1,0 +1,26 @@
+// Copyright (c) 2024, Nardoritos. All rights reserved.
+
+
+#include "UI/ViewModel/MVVM_LoadSlot.h"
+
+void UMVVM_LoadSlot::InitializeSlot()
+{
+	//TODO: Check slot status based on loaded data
+	const int32 WidgetSwitcherIndex = SlotStatus.GetValue();
+	OnWidgetSwitcherIndexSet.Broadcast(WidgetSwitcherIndex);
+}
+
+void UMVVM_LoadSlot::SetPlayerName(FString InPlayerName)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(PlayerName, InPlayerName);
+}
+
+void UMVVM_LoadSlot::SetMapName(FString InMapName)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(MapName, InMapName);
+}
+
+void UMVVM_LoadSlot::SetLoadSlotName(FString InLoadSlotName)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(LoadSlotName, InLoadSlotName);
+}

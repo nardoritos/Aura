@@ -98,6 +98,7 @@ public:
 	// Ability Types->Fire
 	FGameplayTag Abilities_Fire;
 	FGameplayTag Abilities_Fire_FireBolt;
+	FGameplayTag Abilities_Fire_FireBlast;
 
 	// Ability Types->Lightning
 	FGameplayTag Abilities_Lightning;
@@ -109,6 +110,7 @@ public:
 	
 	// Ability Cooldowns->Fire
 	FGameplayTag Cooldown_Fire_FireBolt;
+	FGameplayTag Cooldown_Fire_FireBlast;
 	
 	// Ability Cooldowns->Lightning
 	FGameplayTag Cooldown_Lightning_Electrocute;
@@ -148,6 +150,9 @@ public:
 	FGameplayTag Player_Block_InputHeld;
 	FGameplayTag Player_Block_InputReleased;
 	FGameplayTag Player_Block_CursorTrace;
+
+	// Gameplay Cue
+	FGameplayTag GameplayCue_FireBlast;
 	
 private:
     static FAuraGameplayTags GameplayTags;

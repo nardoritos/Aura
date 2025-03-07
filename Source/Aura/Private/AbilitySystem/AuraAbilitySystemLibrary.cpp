@@ -2,7 +2,6 @@
 
 
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
-
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AuraAbilityTypes.h"
@@ -170,7 +169,7 @@ void UAuraAbilitySystemLibrary::GetAbilityDescription(const UAbilityInfo* Abilit
 			// Ability is Eligible, Unlocked or Equipped
 			OutDescription = FString::Printf(TEXT(
 				"<Title>%s</>\n"
-				"<SubTitle>Level </><SubTitle>%i</>\n\n"
+				"<SubTitle>Level </><Level>%i</>\n\n"
 				"%s\n\n"
 				"%s"
 				
@@ -214,12 +213,49 @@ void UAuraAbilitySystemLibrary::GetAbilityDescription(const UAbilityInfo* Abilit
 	OutNextLevelDescription = FString();
 		
 }
+void UAuraAbilitySystemLibrary::SetIsRadialDamageEffectParam(FDamageEffectParams& DamageEffectParams, bool bIsRadial, float InnerRadius, float OuterRadius, FVector Origin)
+{
+	DamageEffectParams.bIsRadialDamage = bIsRadial;
+	DamageEffectParams.RadialDamageInnerRadius = InnerRadius;
+	DamageEffectParams.RadialDamageOuterRadius = OuterRadius;
+	DamageEffectParams.RadialDamageOrigin = Origin;
+}
+
+void UAuraAbilitySystemLibrary::SetKnockbackDirection(FDamageEffectParams& DamageEffectParams, FVector KnockbackDirection, float Magnitude)
+{
+	KnockbackDirection.Normalize();
+	if (Magnitude == 0.f)
+	{
+		DamageEffectParams.KnockbackForce = KnockbackDirection * DamageEffectParams.KnockbackForceMagnitude;
+	}
+	else
+	{
+		DamageEffectParams.KnockbackForce = KnockbackDirection * Magnitude;
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDeathImpulseDirection(FDamageEffectParams& DamageEffectParams, FVector ImpulseDirection, float Magnitude)
+{
+	ImpulseDirection.Normalize();
+	if (Magnitude == 0.f)
+	{
+		DamageEffectParams.DeathImpulse = ImpulseDirection * DamageEffectParams.DeathImpulseMagnitude;
+	}
+	else
+	{
+		DamageEffectParams.DeathImpulse = ImpulseDirection * Magnitude;
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetTargetEffectParamsASC(FDamageEffectParams& DamageEffectParams,
+	UAbilitySystemComponent* InASC)
+{
+	DamageEffectParams.TargetAbilitySystemComponent = InASC;
+}
 
 void UAuraAbilitySystemLibrary::FormatAbilityDescriptionAtLevel(UGameplayAbility* Ability, const FAuraAbilityInfo& AbilityInfo, const int32 Level, FText& OutDescription)
 {
-	const FAuraNamedArguments Args;
-
-	
+	const FAuraNamedArguments Args;	
 	
 	if (const UAuraDamageGameplayAbility* DamageAbility = Cast<UAuraDamageGameplayAbility>(Ability))
 	{
@@ -233,8 +269,8 @@ void UAuraAbilitySystemLibrary::FormatAbilityDescriptionAtLevel(UGameplayAbility
 			Args._FDmg1Half, SanitizeFloat(DamageAbility->GetDamageAtLevel(Level + 1) / 2),
 			Args._CD0, SanitizeFloat(DamageAbility->GetCooldownAtLevel(Level)),
 			Args._CD1, SanitizeFloat(DamageAbility->GetCooldownAtLevel(Level + 1)),
-			Args._Mana0, -DamageAbility->GetManaCostAtLevel(Level),
-			Args._Mana1, -DamageAbility->GetManaCostAtLevel(Level + 1),
+			Args._Mana0, SanitizeFloat(-DamageAbility->GetManaCostAtLevel(Level)),
+			Args._Mana1, SanitizeFloat(-DamageAbility->GetManaCostAtLevel(Level + 1)),
 			Args._PropagatedDamage0, SanitizeFloat(DamageAbility->GetPropagatedDamageAtLevel(Level)),
             Args._PropagatedDamage1, SanitizeFloat(DamageAbility->GetPropagatedDamageAtLevel(Level + 1)),
 			Args._NumProjectiles0, AbilityInfo.GetSpecialAttribute(Level, NumProjectiles),
@@ -687,19 +723,3 @@ TArray<FVector> UAuraAbilitySystemLibrary::EvenlyRotatedVectors(const FVector& F
 	}
 	return Vectors;
 }
-
-// float UAuraAbilitySystemLibrary::GetRadialDamageWithFalloff(const AActor* TargetActor, const float BaseDamage,
-// 	const float MinimumDamage, const FVector& Origin, const float DamageInnerRadius, const float DamageOuterRadius,
-// 	const float DamageFalloff)
-// {
-// 	if (!TargetActor) return 0.f;
-//  
-// 	FRadialDamageParams RadialDamageParams;
-// 	RadialDamageParams.BaseDamage = BaseDamage;
-// 	RadialDamageParams.DamageFalloff = DamageFalloff;
-// 	RadialDamageParams.InnerRadius = DamageInnerRadius;
-// 	RadialDamageParams.OuterRadius = DamageOuterRadius;
-// 	RadialDamageParams.MinimumDamage = MinimumDamage;
-// 	const float DamageScale = RadialDamageParams.GetDamageScale((Origin - TargetActor->GetActorLocation()).Length());
-// 	return BaseDamage * DamageScale;
-// }

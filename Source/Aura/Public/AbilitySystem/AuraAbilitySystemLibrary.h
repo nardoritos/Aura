@@ -8,6 +8,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+struct FDamageEffectParams;
 class UAuraAbilitySystemComponent;
 struct FAuraAbilityInfo;
 struct FGameplayTag;
@@ -186,6 +187,22 @@ public:
 	static void GetAbilityDescription(const UAbilityInfo* AbilityInfo, UAuraAbilitySystemComponent* ASC,
 		const FGameplayTag& AbilityTag, const int32 Level, FString& OutDescription, FString& OutNextLevelDescription);
 
+	/*
+	 * Damage Effect Params
+	 */
+	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetIsRadialDamageEffectParam(UPARAM(ref) FDamageEffectParams& DamageEffectParams, bool bIsRadial, float InnerRadius, float OuterRadius, FVector Origin);
+	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetKnockbackDirection(UPARAM(ref) FDamageEffectParams& DamageEffectParams, FVector KnockbackDirection = FVector::ZeroVector, float Magnitude = 0.f);
+	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetDeathImpulseDirection(UPARAM(ref) FDamageEffectParams& DamageEffectParams, FVector ImpulseDirection = FVector::ZeroVector, float Magnitude = 0.f);
+	
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetTargetEffectParamsASC(UPARAM(ref) FDamageEffectParams& DamageEffectParams, UAbilitySystemComponent* InASC);
+	
 private:
 	
 	static void FormatAbilityDescriptionAtLevel(UGameplayAbility* Ability, const FAuraAbilityInfo& AbilityInfo, const int32 Level, FText& OutDescription);

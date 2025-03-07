@@ -7,12 +7,19 @@
 #include "AuraGameplayTags.h"
 #include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Commandlets/WorldPartitionCommandletHelpers.h"
+#include "CookOnTheSide/CookOnTheFlyServer.h"
+#include "Game/AuraGameInstance.h"
+#include "Game/AuraGameModeBase.h"
+#include "Game/AuraSaveGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
@@ -50,8 +57,39 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 
 	// Init ability actor info for the SERVER
 	InitAbilityActorInfo();
+	LoadProgress();
+	
+	// TODO: Load in Abilities from disk
 	AddCharacterAbilities();
 	
+}
+
+void AAuraCharacter::LoadProgress()
+{
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (AuraGameMode)
+	{
+		UAuraSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();
+		if (SaveData == nullptr) return;
+
+		if (AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>())
+		{
+			AuraPlayerState->SetLevel(SaveData->PlayerLevel);
+			AuraPlayerState->SetXP(SaveData->XP);
+			AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);
+			AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);
+		}
+
+		if (SaveData->bFirstTimeLoadIn)
+		{
+			InitializeDefaultAttributes();
+			AddCharacterAbilities();
+		}
+		else
+		{
+			
+		}		
+	}
 }
 
 void AAuraCharacter::OnRep_PlayerState()
@@ -201,6 +239,36 @@ void AAuraCharacter::HideMagicCircle_Implementation()
 	}
 }
 
+void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
+{
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (AuraGameMode)
+	{
+		UAuraSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();
+		if (SaveData == nullptr) return;
+
+		SaveData->PlayerStartTag = CheckpointTag;
+
+		if(AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>())
+		{
+			SaveData->PlayerLevel = AuraPlayerState->GetPlayerLevel();
+			SaveData->SpellPoints = AuraPlayerState->GetPlayerSpellPoints();
+			SaveData->AttributePoints = AuraPlayerState->GetPlayerAttributePoints();
+			SaveData->XP = AuraPlayerState->GetPlayerXP();
+		}
+
+		SaveData->Strength = UAuraAttributeSet::GetStrengthAttribute().GetNumericValue(GetAttributeSet());
+		SaveData->Intelligence = UAuraAttributeSet::GetIntelligenceAttribute().GetNumericValue(GetAttributeSet());
+		SaveData->Resilience = UAuraAttributeSet::GetResilienceAttribute().GetNumericValue(GetAttributeSet());
+		SaveData->Vigor = UAuraAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet());
+		
+		SaveData->bFirstTimeLoadIn = false;
+		AuraGameMode->SaveInGameProgressData(SaveData);
+		
+	}
+	
+}
+
 void AAuraCharacter::AddToSpellPoints_Implementation(int32 InSpellPoints)
 {
 	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
@@ -234,8 +302,6 @@ void AAuraCharacter::InitAbilityActorInfo()
 			AuraHUD->InitOverlay(AuraPlayerController, AuraPlayerState, AbilitySystemComponent, AttributeSet);
 		}
 	}
-	
-	InitializeDefaultAttributes();
 }
 
 
