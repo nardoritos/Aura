@@ -20,8 +20,13 @@ AAuraEffectActor::AAuraEffectActor()
 void AAuraEffectActor::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	SetCollisionState(bShouldSpawnWithCollisionEnabled);
 
-	SetCollisionState(false);
+	if (!bShouldSpawnWithCollisionEnabled)
+	{
+		PlayIdleAnimation();
+	}
 }
 
 void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)

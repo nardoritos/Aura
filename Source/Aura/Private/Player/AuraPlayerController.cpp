@@ -19,6 +19,8 @@
 #include "Interaction/EnemyInterface.h"
 #include "GameFramework/Character.h"
 #include "Interaction/HighlightInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "UI/HUD/AuraHUD.h"
 #include "UI/Widget/DamageTextComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
@@ -129,6 +131,7 @@ void AAuraPlayerController::SetupInputComponent()
 	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &AAuraPlayerController::ShiftPressed);
 	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &AAuraPlayerController::ShiftReleased);
+	AuraInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &AAuraPlayerController::OpenPauseMenu);
 	AuraInputComponent->BindAbilityActions(InputConfig, this,
 		&ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
@@ -145,6 +148,14 @@ void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount, 
 
 		DamageText->SetDamageText(DamageAmount, bBlockedHit, bCriticalHit);
 		
+	}
+}
+
+void AAuraPlayerController::OpenPauseMenu()
+{
+	if(AAuraHUD* AuraHUD = Cast<AAuraHUD>(GetHUD()))
+	{
+		AuraHUD->HandlePauseMenu();
 	}
 }
 

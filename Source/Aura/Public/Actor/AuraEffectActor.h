@@ -47,42 +47,42 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void OnEndOverlap(AActor* TargetActor);
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	bool bDestroyOnEffectApplication = false;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	bool bApplyEffectToEnemies = false;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	EEffectApplicationPolicy InstantEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	TSubclassOf<UGameplayEffect> DurationGameplayEffectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	EEffectApplicationPolicy DurationEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	TSubclassOf<UGameplayEffect> InfiniteGameplayEffectClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	EEffectApplicationPolicy InfiniteEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect Actor|Applied Effects")
 	EEffectRemovalPolicy InfiniteEffectRemovalPolicy = EEffectRemovalPolicy::RemoveOnEndOverlap;
 
 	TMap<FActiveGameplayEffectHandle, UAbilitySystemComponent*> ActiveEffectHandles;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Actor|Applied Effects")
 	float ActorLevel = 1.f;
 
 	UFUNCTION(BlueprintCallable)
 	void SetCollisionState(bool bCollisionEnabled);
 
-	UPROPERTY(BlueprintReadWrite, Category = "Cosmetic Effects")
+	UPROPERTY(BlueprintReadWrite, Category = "Effect Actor|Cosmetic Effects")
 	FVector Destination;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
@@ -91,9 +91,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void PlayIdleAnimation();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Cosmetic Effects")
+	UPROPERTY(EditDefaultsOnly, Category = "Effect Actor|Cosmetic Effects")
 	TObjectPtr<UNiagaraSystem> PickupSystem;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Cosmetic Effects")
+	UPROPERTY(EditDefaultsOnly, Category = "Effect Actor|Cosmetic Effects")
 	TObjectPtr<USoundBase> PickupSound;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Effect Actor", meta = (ExposeOnSpawn=true))
+	bool bShouldSpawnWithCollisionEnabled = true;
 };
