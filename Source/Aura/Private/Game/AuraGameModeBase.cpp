@@ -3,10 +3,15 @@
 
 #include "Game/AuraGameModeBase.h"
 
+#include "EngineUtils.h"
+#include "Aura/AuraLogChannels.h"
 #include "Game/AuraGameInstance.h"
 #include "Game/AuraSaveGame.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/PlayerStart.h"
+#include "Interaction/SaveInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 
 void AAuraGameModeBase::SaveSlotData(const UMVVM_LoadSlot* LoadSlot, const int32 SlotIndex) const
@@ -19,6 +24,7 @@ void AAuraGameModeBase::SaveSlotData(const UMVVM_LoadSlot* LoadSlot, const int32
 	LoadScreenSaveGame->PlayerName = LoadSlot->GetPlayerName();
 	LoadScreenSaveGame->SaveSlotStatus = Taken;
 	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();
+	LoadScreenSaveGame->MapAssetName = LoadSlot->MapAssetName;
 	LoadScreenSaveGame->PlayerStartTag = LoadSlot->PlayerStartTag;
 	
 	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame, LoadSlot->GetLoadSlotName(), SlotIndex);
@@ -68,12 +74,123 @@ void AAuraGameModeBase::SaveInGameProgressData(UAuraSaveGame* SaveObject)
 	UGameplayStatics::SaveGameToSlot(SaveObject, InGameLoadSlotName, InGameLoadSlotIndex);
 }
 
+void AAuraGameModeBase::SaveWorldState(UWorld* World, const FString& DestinationMapAssetName) const
+{
+	FString WorldName = World->GetMapName();
+	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);
+
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());
+	check(AuraGameInstance);
+
+	if (UAuraSaveGame* SaveGame = GetSaveSlotData(AuraGameInstance->LoadSlotName, AuraGameInstance->LoadSlotIndex))
+	{
+		if (DestinationMapAssetName != FString(""))
+		{
+			SaveGame->MapAssetName = DestinationMapAssetName;
+			SaveGame->MapName = GetMapNameFromMapAssetName(DestinationMapAssetName); 
+		}
+		if (!SaveGame->HasMap(WorldName))
+		{
+			FSavedMap NewSavedMap;
+			NewSavedMap.MapAssetName = WorldName;
+			SaveGame->SavedMaps.Add(NewSavedMap);
+		}
+		FSavedMap SavedMap = SaveGame->GetSavedMapWithMapName(WorldName);
+		SavedMap.SavedActors.Empty();
+
+		for (FActorIterator It(World); It; ++It)
+		{
+			AActor* Actor = *It;
+
+			if (!IsValid(Actor) || !Actor->Implements<USaveInterface>()) continue;
+
+			FSavedActor SavedActor;
+			SavedActor.ActorName = Actor->GetFName();
+			SavedActor.Transform = Actor->GetTransform();
+
+			FMemoryWriter MemoryWriter(SavedActor.Bytes);
+
+			FObjectAndNameAsStringProxyArchive Archive(MemoryWriter, true);
+			Archive.ArIsSaveGame = true;
+
+			Actor->Serialize(Archive);
+
+			SavedMap.SavedActors.AddUnique(SavedActor);
+		}
+		for (FSavedMap& MapToReplace : SaveGame->SavedMaps)
+		{
+			if (MapToReplace.MapAssetName == WorldName)
+			{
+				MapToReplace = SavedMap;
+			}
+		}
+		UGameplayStatics::SaveGameToSlot(SaveGame, AuraGameInstance->LoadSlotName, AuraGameInstance->LoadSlotIndex);
+	}
+}
+
+void AAuraGameModeBase::LoadWorldState(UWorld* World) const
+{
+	FString WorldName = World->GetMapName();
+	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);
+
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());
+	check(AuraGameInstance);
+
+	if (UGameplayStatics::DoesSaveGameExist(AuraGameInstance->LoadSlotName, AuraGameInstance->LoadSlotIndex))
+	{
+		UAuraSaveGame* SaveGame = Cast<UAuraSaveGame>(UGameplayStatics::LoadGameFromSlot(AuraGameInstance->LoadSlotName, AuraGameInstance->LoadSlotIndex));
+		if (SaveGame == nullptr)
+		{
+			UE_LOG(LogAura, Error, TEXT("Failed to load Slot"));
+			return;
+		}
+		for (FActorIterator It(World); It; ++It)
+		{
+			AActor* Actor = *It;
+
+			if (!Actor->Implements<USaveInterface>()) continue;
+
+			for (FSavedActor SavedActor : SaveGame->GetSavedMapWithMapName(WorldName).SavedActors)
+			{
+				if (SavedActor.ActorName == Actor->GetFName())
+				{
+					if (ISaveInterface::Execute_ShouldLoadTransform(Actor))
+					{
+						Actor->SetActorTransform(SavedActor.Transform);
+					}
+
+					FMemoryReader MemoryReader(SavedActor.Bytes);
+					
+					FObjectAndNameAsStringProxyArchive Archive(MemoryReader, true);
+					Archive.ArIsSaveGame = true;
+					
+					Actor->Serialize(Archive); // Converts binary bytes back into variables
+
+					ISaveInterface::Execute_LoadActor(Actor);
+				}
+			}
+		}
+	}
+}
+
 void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 {
 	const FString SlotName = Slot->GetLoadSlotName();
 	const int32 SlotIndex = Slot->SlotIndex;
 	
 	UGameplayStatics::OpenLevelBySoftObjectPtr(Slot, Maps.FindChecked(Slot->GetMapName()));
+}
+
+FString AAuraGameModeBase::GetMapNameFromMapAssetName(const FString& MapAssetName) const
+{
+	for (auto& Map : Maps)
+	{
+		if (Map.Value.ToSoftObjectPath().GetAssetName() == MapAssetName)
+		{
+			return Map.Key;
+		}
+	}
+	return FString();
 }
 
 AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
@@ -93,15 +210,27 @@ AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 			{
 				if (PlayerStart->PlayerStartTag == AuraGameInstance->PlayerStartTag)
 				{
+					
 					SelectedActor = PlayerStart;
 					break;
 				}
 			}
 			
 		}
+		UE_LOG(LogAura, Log, TEXT("Chose PlayerStart %s"), *AuraGameInstance->PlayerStartTag.ToString())
 		return SelectedActor;
 	}
+	UE_LOG(LogAura, Error, TEXT("Failed to find PlayerStart"));
 	return nullptr;
+}
+
+void AAuraGameModeBase::PlayerDied(ACharacter* DeadCharacter)
+{
+	UAuraSaveGame* SaveGame = RetrieveInGameSaveData();
+	if (!IsValid(SaveGame)) return;
+
+	UGameplayStatics::OpenLevel(DeadCharacter, FName(SaveGame->MapAssetName));
+	
 }
 
 void AAuraGameModeBase::BeginPlay()

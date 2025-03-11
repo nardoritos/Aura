@@ -2,18 +2,15 @@
 
 
 #include "Character/AuraCharacter.h"
-
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
 #include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Commandlets/WorldPartitionCommandletHelpers.h"
-#include "CookOnTheSide/CookOnTheFlyServer.h"
-#include "Game/AuraGameInstance.h"
 #include "Game/AuraGameModeBase.h"
 #include "Game/AuraSaveGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -58,9 +55,11 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	// Init ability actor info for the SERVER
 	InitAbilityActorInfo();
 	LoadProgress();
-	
-	// TODO: Load in Abilities from disk
-	AddCharacterAbilities();
+
+	if (AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+	{
+		AuraGameMode->LoadWorldState(GetWorld());
+	}
 	
 }
 
@@ -71,15 +70,7 @@ void AAuraCharacter::LoadProgress()
 	{
 		UAuraSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();
 		if (SaveData == nullptr) return;
-
-		if (AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>())
-		{
-			AuraPlayerState->SetLevel(SaveData->PlayerLevel);
-			AuraPlayerState->SetXP(SaveData->XP);
-			AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);
-			AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);
-		}
-
+		
 		if (SaveData->bFirstTimeLoadIn)
 		{
 			InitializeDefaultAttributes();
@@ -87,7 +78,24 @@ void AAuraCharacter::LoadProgress()
 		}
 		else
 		{
-			
+			// TODO: Load in Abilities from disk
+			if(UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
+			{
+				AuraASC->AddCharacterAbilitiesFromSaveData(SaveData);
+			}
+	
+			// Only Changeable attributes need to be loaded from disk, Secondary attributes that depend on the Primary doesn't need to be saved
+			UAuraAbilitySystemLibrary::InitializeDefaultAttributesFromSaveData(this, AbilitySystemComponent, SaveData);
+			ApplyEffectToSelf(DefaultSecondaryAttributes, 1.f);
+			ApplyEffectToSelf(DefaultVitalAttributes, 1.f);
+
+			if (AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>())
+			{
+				AuraPlayerState->SetLevel(SaveData->PlayerLevel);
+				AuraPlayerState->SetXP(SaveData->XP);
+				AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);
+				AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);
+			}
 		}		
 	}
 }
@@ -263,6 +271,31 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 		SaveData->Vigor = UAuraAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet());
 		
 		SaveData->bFirstTimeLoadIn = false;
+		SaveData->SavedAbilities.Empty();
+		
+		if (!HasAuthority()) return;
+
+		UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent);
+		FForEachAbility SaveAbilityDelegate;
+		SaveAbilityDelegate.BindLambda([this, AuraASC, SaveData](const FGameplayAbilitySpec& AbilitySpec)
+		{
+			const FGameplayTag AbilityTag = AuraASC->GetAbilityTagFromSpec(AbilitySpec);
+			UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(this);
+			FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
+
+			FSavedAbility SavedAbility;
+			SavedAbility.GameplayAbility = Info.Ability;
+			SavedAbility.AbilityLevel = AbilitySpec.Level;
+			SavedAbility.AbilitySlot = AuraASC->GetSlotTagFromAbilityTag(AbilityTag);
+			SavedAbility.AbilityStatus = AuraASC->GetStatusFromAbilityTag(AbilityTag);
+			SavedAbility.AbilityTag = AbilityTag;
+			SavedAbility.AbilityType = Info.AbilityType;
+			
+			SaveData->SavedAbilities.Add(SavedAbility);
+		});
+		AuraASC->ForEachAbility(SaveAbilityDelegate);
+		
+		
 		AuraGameMode->SaveInGameProgressData(SaveData);
 		
 	}
@@ -281,6 +314,23 @@ int32 AAuraCharacter::GetPlayerLevel_Implementation()
 	const AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 	check (AuraPlayerState)
 	return AuraPlayerState->GetPlayerLevel();
+}
+
+void AAuraCharacter::Die(const FVector& DeathImpulse)
+{
+	Super::Die(DeathImpulse);
+
+	FTimerDelegate DeathTimerDelegate;
+	DeathTimerDelegate.BindLambda([this]()
+	{
+		AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+		if (AuraGameMode)
+		{
+			AuraGameMode->PlayerDied(this);
+		}
+	});
+	GetWorldTimerManager().SetTimer(DeathTimer, DeathTimerDelegate, DeathTime, false);
+	TopDownCameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 }
 
 void AAuraCharacter::InitAbilityActorInfo()

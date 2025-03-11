@@ -9,11 +9,38 @@
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "Aura/AuraLogChannels.h"
+#include "Game/AuraSaveGame.h"
 #include "Interaction/PlayerInterface.h"
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
 	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &UAuraAbilitySystemComponent::ClientEffectApplied);
+}
+
+void UAuraAbilitySystemComponent::AddCharacterAbilitiesFromSaveData(UAuraSaveGame* SaveData)
+{
+	for (const FSavedAbility& SavedAbility : SaveData->SavedAbilities)
+	{
+		const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
+		const TSubclassOf<UGameplayAbility> LoadedAbilityClass = SavedAbility.GameplayAbility;
+
+		FGameplayAbilitySpec LoadedAbilitySpec = FGameplayAbilitySpec(LoadedAbilityClass, SavedAbility.AbilityLevel);
+
+		LoadedAbilitySpec.GetDynamicSpecSourceTags().AddTag(SavedAbility.AbilitySlot);
+		LoadedAbilitySpec.GetDynamicSpecSourceTags().AddTag(SavedAbility.AbilityStatus);
+
+		// We want to only GiveAbility() if it's an Offensive or Passive Ability
+		// If it's a Passive Ability AND it was saved as equipped, we also want to Activate it once, so it's effect become available
+		if (!SavedAbility.AbilityType.MatchesTagExact(GameplayTags.Abilities_Type_None))
+		{
+			GiveAbility(LoadedAbilitySpec);
+			if (SavedAbility.AbilityType.MatchesTagExact(GameplayTags.Abilities_Type_Passive) && SavedAbility.AbilityStatus.MatchesTagExact(GameplayTags.Abilities_Status_Equipped))
+				TryActivateAbility(LoadedAbilitySpec.Handle);
+		}
+		
+	}
+	bStartupAbilitiesGiven = true;
+	OnAbilitiesGiven.Broadcast();
 }
 
 void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities)
@@ -43,6 +70,7 @@ void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(
 	{
 
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(FAuraGameplayTags::Get().Abilities_Status_Equipped);
 		GiveAbilityAndActivateOnce(AbilitySpec);
 		
 	}
@@ -438,9 +466,12 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 						OnDeactivatePassiveAbility.Broadcast(GetAbilityTagFromSpec(*SpecWithSlot));
 					}
 
-					ClearSlot(SpecWithSlot);
-					SpecWithSlot->GetDynamicSpecSourceTags().RemoveTag(GameplayTags.Abilities_Status_Equipped);
+					// We want to clear the slot regardless of being Passive or Offensive
+					// Additionally, we also want to set the Former Ability's Status to Unlocked
+					SpecWithSlot->GetDynamicSpecSourceTags().RemoveTag(GetStatusFromSpec(*SpecWithSlot));
 					SpecWithSlot->GetDynamicSpecSourceTags().AddTag(GameplayTags.Abilities_Status_Unlocked);
+					
+					ClearSlot(SpecWithSlot);
 					MarkAbilitySpecDirty(*SpecWithSlot);
 				}
 			}
@@ -451,15 +482,14 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 				{
 					TryActivateAbility(AbilitySpec->Handle);
 					MulticastActivatePassiveEffect(AbilityTag, true);
+					
 				}
-			}
-
-			AssignAbilityToSlot(*AbilitySpec, SlotTag);
-			if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
-			{
-				AbilitySpec->GetDynamicSpecSourceTags().RemoveTag(GameplayTags.Abilities_Status_Unlocked);
+				AbilitySpec->GetDynamicSpecSourceTags().RemoveTag(GetStatusFromSpec(*AbilitySpec));
 				AbilitySpec->GetDynamicSpecSourceTags().AddTag(GameplayTags.Abilities_Status_Equipped);
+				
 			}
+			
+			AssignAbilityToSlot(*AbilitySpec, SlotTag);
 			MarkAbilitySpecDirty(*AbilitySpec);
 			
 		}

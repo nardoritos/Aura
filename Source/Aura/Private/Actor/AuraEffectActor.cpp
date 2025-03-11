@@ -5,7 +5,9 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemInterface.h"
+#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 AAuraEffectActor::AAuraEffectActor()
@@ -19,6 +21,7 @@ void AAuraEffectActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SetCollisionState(false);
 }
 
 void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
@@ -47,6 +50,8 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 
 	if (!bIsInfinite)
 	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, PickupSystem, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation(), FRotator::ZeroRotator);
 		Destroy();
 	}
 }
@@ -105,6 +110,11 @@ void AAuraEffectActor::OnEndOverlap(AActor* TargetActor)
 			ActiveEffectHandles.FindAndRemoveChecked(Handle);
 		}
 	}
+}
+
+void AAuraEffectActor::SetCollisionState(bool bCollisionEnabled)
+{
+	SetActorEnableCollision(bCollisionEnabled);
 }
 
 

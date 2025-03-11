@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "AuraGameModeBase.generated.h"
 
+class ULootTiers;
 class UAuraSaveGame;
 class USaveGame;
 class UMVVM_LoadSlot;
@@ -28,11 +29,17 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Aura|Ability Info")
 	TObjectPtr<UAbilityInfo> AbilityInfo;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Aura|Loot Tiers")
+	TObjectPtr<ULootTiers> LootTiers;
+
 	void SaveSlotData(const UMVVM_LoadSlot* LoadSlot, const int32 SlotIndex) const;
 	UAuraSaveGame* GetSaveSlotData(const FString& SlotName, int32 SlotIndex) const;
 	static void DeleteSlot(const FString& SlotName, int32 SlotIndex);
 	UAuraSaveGame* RetrieveInGameSaveData() const;
 	void SaveInGameProgressData(UAuraSaveGame* SaveObject);
+
+	void SaveWorldState(UWorld* World, const FString& DestinationMapAssetName = FString("")) const;
+	void LoadWorldState(UWorld* World) const;
 	
 	void TravelToMap(UMVVM_LoadSlot* Slot);
 	
@@ -51,7 +58,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Aura|Maps")
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
 
+	FString GetMapNameFromMapAssetName(const FString& MapAssetName) const;
+	
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+	void PlayerDied(ACharacter* DeadCharacter);
 protected:
 	virtual void BeginPlay() override;
 };

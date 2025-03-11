@@ -24,6 +24,8 @@ class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInte
 	GENERATED_BODY()
 
 public:
+		
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	AAuraCharacterBase();
 
@@ -51,7 +53,7 @@ public:
 	UFUNCTION()
 	virtual void OnRep_Burned();
 	
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	void SetCharacterClass(ECharacterClass InClass) {CharacterClass = InClass; }
 	
 protected:
 	
@@ -75,6 +77,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Aura|Combat")
 	FName OtherSocketName;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Aura|Combat")
 	bool bDead = false;
 	
 	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount);

@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Character/AuraCharacterBase.h"
 #include "Interaction/EnemyInterface.h"
+#include "Interaction/HighlightInterface.h"
+#include "Interaction/SaveInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "AuraEnemy.generated.h"
 
@@ -17,7 +19,7 @@ class AAuraAIController;
  * 
  */
 UCLASS()
-class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface
+class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface, public ISaveInterface, public IHighlightInterface
 {
 	GENERATED_BODY()
 
@@ -26,18 +28,24 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 
-	/** Enemy Interface */
-	virtual void HighlightActor() override;
-	virtual void UnHighlightActor() override;
-	/** end Enemy Interface */
+	/* Highlight Interface */
+	virtual void HighlightActor_Implementation() override;
+	virtual void UnHighlightActor_Implementation() override;
+	virtual bool SetMoveToLocation_Implementation(FVector& OutDestination) override {return false;}
+	/* End Highlight Interface */
 
-	/** Combat Interface */
+	/* Combat Interface */
 	virtual int32 GetPlayerLevel_Implementation() override;
 	virtual void Die(const FVector& DeathImpulse) override;
 	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
 	virtual AActor* GetCombatTarget_Implementation() const override;
-	/** End Combat Interface*/
+	/* End Combat Interface*/
 
+	/* Save Interface */
+	virtual bool ShouldLoadTransform_Implementation() override {return false;}
+	virtual void LoadActor_Implementation() override;
+	/* End Save Interface */
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChangedSignature OnHealthChanged;
 	
@@ -54,6 +62,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 	TObjectPtr<AActor> CombatTarget;
+
+	void SetLevel(int32 InLevel) {Level = InLevel;}
 	
 protected:
 
@@ -74,4 +84,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AAuraAIController> AuraAIController;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SpawnLoot();
 };

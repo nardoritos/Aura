@@ -12,6 +12,7 @@
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "Engine/DamageEvents.h"
 #include "Game/AuraGameModeBase.h"
+#include "Game/AuraSaveGame.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerState.h"
@@ -100,6 +101,28 @@ void UAuraAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* World
 	const FGameplayEffectSpecHandle VitalAttributesSpecHandle = ASC->MakeOutgoingSpec(CharacterClassInfo->VitalAttributes, Level, VitalAttributesContextHandle);
 	ASC->ApplyGameplayEffectSpecToSelf(*VitalAttributesSpecHandle.Data.Get());
 	
+}
+
+void UAuraAbilitySystemLibrary::InitializeDefaultAttributesFromSaveData(const UObject* WorldContextObject,
+	UAbilitySystemComponent* ASC, UAuraSaveGame* SaveGame)
+{
+	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);
+	if (CharacterClassInfo == nullptr) return;
+
+	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();
+	const AActor* SourceAvatarActor = ASC->GetAvatarActor();
+
+	FGameplayEffectContextHandle PrimaryAttributesFromSaveHandle = ASC->MakeEffectContext();
+	PrimaryAttributesFromSaveHandle.AddSourceObject(SourceAvatarActor);
+
+	const FGameplayEffectSpecHandle PrimaryAttributesFromSaveSpecHandle = ASC->MakeOutgoingSpec(CharacterClassInfo->PrimaryAttributes_SetByCaller, 1.f, PrimaryAttributesFromSaveHandle);
+
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(PrimaryAttributesFromSaveSpecHandle, GameplayTags.Attributes_Primary_Strength, SaveGame->Strength);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(PrimaryAttributesFromSaveSpecHandle, GameplayTags.Attributes_Primary_Intelligence, SaveGame->Intelligence);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(PrimaryAttributesFromSaveSpecHandle, GameplayTags.Attributes_Primary_Vigor, SaveGame->Vigor);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(PrimaryAttributesFromSaveSpecHandle, GameplayTags.Attributes_Primary_Resilience, SaveGame->Resilience);
+
+	ASC->ApplyGameplayEffectSpecToSelf(*PrimaryAttributesFromSaveSpecHandle.Data.Get());
 }
 
 void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContextObject, UAbilitySystemComponent* ASC, ECharacterClass CharacterClass)
@@ -308,6 +331,13 @@ UAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldCont
 	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if(AuraGameMode == nullptr) return nullptr;
 	return AuraGameMode->AbilityInfo;
+}
+
+ULootTiers* UAuraAbilitySystemLibrary::GetLootTiers(const UObject* WorldContextObject)
+{
+	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if(AuraGameMode == nullptr) return nullptr;
+	return AuraGameMode->LootTiers;
 }
 
 bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)

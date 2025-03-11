@@ -8,6 +8,7 @@
 
 #include "AuraEffectActor.generated.h"
 
+class UNiagaraSystem;
 class UAbilitySystemComponent;
 class UGameplayEffect;
 
@@ -75,7 +76,24 @@ protected:
 
 	TMap<FActiveGameplayEffectHandle, UAbilitySystemComponent*> ActiveEffectHandles;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Applied Effects")
 	float ActorLevel = 1.f;
 
+	UFUNCTION(BlueprintCallable)
+	void SetCollisionState(bool bCollisionEnabled);
+
+	UPROPERTY(BlueprintReadWrite, Category = "Cosmetic Effects")
+	FVector Destination;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SetDestinationAndAnimate(FVector InDestination);
+	
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void PlayIdleAnimation();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Cosmetic Effects")
+	TObjectPtr<UNiagaraSystem> PickupSystem;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Cosmetic Effects")
+	TObjectPtr<USoundBase> PickupSound;
 };

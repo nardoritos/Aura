@@ -11,6 +11,7 @@
 #include "UI/Widget/AuraUserWidget.h"
 #include "AuraGameplayTags.h"
 #include "AI/AuraAIController.h"
+#include "Aura/AuraLogChannels.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -27,7 +28,13 @@ AAuraEnemy::AAuraEnemy()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	
+
+	GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+	GetMesh()->MarkRenderStateDirty();
+	SkeletalWeapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+	SkeletalWeapon->MarkRenderStateDirty();
+	StaticWeapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+	StaticWeapon->MarkRenderStateDirty();
 	
 	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");
 
@@ -52,18 +59,14 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 
 }
 
-void AAuraEnemy::HighlightActor()
+void AAuraEnemy::HighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(true);
-	GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
 	SkeletalWeapon->SetRenderCustomDepth(true);
-	SkeletalWeapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
-	StaticWeapon->SetRenderCustomDepth(true);
-	StaticWeapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
-	
+	StaticWeapon->SetRenderCustomDepth(true);	
 }
 
-void AAuraEnemy::UnHighlightActor()
+void AAuraEnemy::UnHighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(false);
 	SkeletalWeapon->SetRenderCustomDepth(false);
@@ -80,6 +83,8 @@ void AAuraEnemy::Die(const FVector& DeathImpulse)
 	SetLifeSpan(LifeSpan);
 	if (AuraAIController) AuraAIController->GetBlackboardComponent()->SetValueAsBool("Dead", true);
 
+	SpawnLoot();
+	
 	Super::Die(DeathImpulse);
 }
 
@@ -91,6 +96,16 @@ void AAuraEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget)
 AActor* AAuraEnemy::GetCombatTarget_Implementation() const
 {
 	return CombatTarget;
+}
+
+void AAuraEnemy::LoadActor_Implementation()
+{
+	UE_LOG(LogAura, Log, TEXT("Loading Enemy actor"))
+	if (bDead)
+	{
+		UE_LOG(LogAura, Log, TEXT("Was dead, destroying..."))
+		Destroy();
+	}
 }
 
 void AAuraEnemy::BeginPlay()
