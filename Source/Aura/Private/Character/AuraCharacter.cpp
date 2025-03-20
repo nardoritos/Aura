@@ -69,7 +69,13 @@ void AAuraCharacter::LoadProgress()
 	if (AuraGameMode)
 	{
 		UAuraSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();
-		if (SaveData == nullptr) return;
+		if (SaveData == nullptr)
+		{
+			// Added this so I can test faster
+			InitializeDefaultAttributes();
+			AddCharacterAbilities();
+			return;
+		}
 		
 		if (SaveData->bFirstTimeLoadIn)
 		{
@@ -78,7 +84,7 @@ void AAuraCharacter::LoadProgress()
 		}
 		else
 		{
-			// TODO: Load in Abilities from disk
+			
 			if(UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
 			{
 				AuraASC->AddCharacterAbilitiesFromSaveData(SaveData);

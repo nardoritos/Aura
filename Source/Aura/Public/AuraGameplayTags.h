@@ -99,6 +99,11 @@ public:
 	FGameplayTag Abilities_Fire;
 	FGameplayTag Abilities_Fire_FireBolt;
 	FGameplayTag Abilities_Fire_FireBlast;
+	FGameplayTag Abilities_Fire_FireNado;
+	
+	// Ability Types->Fire_Environment
+	FGameplayTag Abilities_Fire_DelayedExplosion;
+	
 
 	// Ability Types->Lightning
 	FGameplayTag Abilities_Lightning;

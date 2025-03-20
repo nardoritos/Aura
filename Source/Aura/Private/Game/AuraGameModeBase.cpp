@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "Aura/AuraLogChannels.h"
 #include "Game/AuraGameInstance.h"
+#include "Game/AuraGameUserSettings.h"
 #include "Game/AuraSaveGame.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerStart.h"
@@ -224,7 +225,7 @@ AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 	return nullptr;
 }
 
-void AAuraGameModeBase::PlayerDied(ACharacter* DeadCharacter)
+void AAuraGameModeBase::PlayerDied(const ACharacter* DeadCharacter) const
 {
 	UAuraSaveGame* SaveGame = RetrieveInGameSaveData();
 	if (!IsValid(SaveGame)) return;
@@ -233,9 +234,52 @@ void AAuraGameModeBase::PlayerDied(ACharacter* DeadCharacter)
 	
 }
 
+void AAuraGameModeBase::LoadAudioSettings() const
+{
+	if (UAuraGameUserSettings* AuraGUS = Cast<UAuraGameUserSettings>(GEngine->GetGameUserSettings()))
+	{
+		AuraGUS->OnMasterVolumeApplied.AddUObject(this, &AAuraGameModeBase::ApplyMasterVolume);
+		AuraGUS->OnSFXVolumeApplied.AddUObject(this, &AAuraGameModeBase::ApplySFXVolume);
+		AuraGUS->OnMusicVolumeApplied.AddUObject(this, &AAuraGameModeBase::ApplyMusicVolume);
+	}
+}
+
 void AAuraGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-
+	LoadAudioSettings();
+		
 	Maps.Add(DefaultMapName, DefaultMap);
+}
+
+void AAuraGameModeBase::ApplyMasterVolume(const float InMasterVolume) const
+{
+	UGameplayStatics::SetSoundMixClassOverride(
+		GetWorld(),
+		MasterSoundMix,
+		MasterSoundClass,
+		InMasterVolume);
+	UGameplayStatics::PushSoundMixModifier(GetWorld(), MasterSoundMix);
+}
+
+void AAuraGameModeBase::ApplySFXVolume(const float InSFXVolume) const
+{
+
+	UGameplayStatics::SetSoundMixClassOverride(
+		GetWorld(),
+		SFXSoundMix,
+		SFXSoundClass,
+		InSFXVolume);
+	UGameplayStatics::PushSoundMixModifier(GetWorld(), SFXSoundMix);
+
+}
+
+void AAuraGameModeBase::ApplyMusicVolume(const float InMusicVolume) const
+{
+	UGameplayStatics::SetSoundMixClassOverride(
+		GetWorld(),
+		MusicSoundMix,
+		MusicSoundClass,
+		InMusicVolume);
+	UGameplayStatics::PushSoundMixModifier(GetWorld(), MusicSoundMix);
 }

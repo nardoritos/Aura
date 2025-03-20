@@ -1,0 +1,4 @@
+ - D7B215514890EA0B52EF36AAD1826E0E 
+	/Game/Blueprints/UI/ConfirmationPrompt/WBP_ConfirmationPrompt.Default__WBP_ConfirmationPrompt_C.ConfirmationText - "This action is permanent, are you sure?" 
+	/Game/Blueprints/UI/LoadMenu/WBP_LoadScreen.WBP_LoadScreen_C:ExecuteUbergraph_WBP_LoadScreen [Script Bytecode] - "Deleting a slot is permanent, you will lose all progress." 
+

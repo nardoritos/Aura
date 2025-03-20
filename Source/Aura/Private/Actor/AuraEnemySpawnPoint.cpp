@@ -6,7 +6,7 @@
 #include "Character/AuraEnemy.h"
 #include "WorldPartition/Cook/WorldPartitionCookPackage.h"
 
-void AAuraEnemySpawnPoint::SpawnEnemy()
+AAuraEnemy* AAuraEnemySpawnPoint::SpawnEnemy() const
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -16,5 +16,6 @@ void AAuraEnemySpawnPoint::SpawnEnemy()
 	Enemy->SetCharacterClass(CharacterClass);
 	Enemy->FinishSpawning(GetActorTransform());
 	Enemy->SpawnDefaultController();
-	
+
+	return Enemy;
 }

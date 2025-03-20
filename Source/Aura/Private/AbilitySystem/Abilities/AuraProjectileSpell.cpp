@@ -6,7 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
-#include "Actor/AuraProjectile.h"
+#include "Actor/AuraProjectileSphere.h"
 #include "Interaction/CombatInterface.h"
 
 void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -38,7 +38,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	SpawnTransform.SetRotation(Rotation.Quaternion());
 	
 	
-	AAuraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectile>(
+	AAuraProjectileSphere* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectileSphere>(
 		ProjectileClass,
 		SpawnTransform,
 		GetOwningActorFromActorInfo(),

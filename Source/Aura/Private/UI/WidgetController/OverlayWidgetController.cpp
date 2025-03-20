@@ -16,6 +16,8 @@
 	OnMaxHealthChanged.Broadcast(GetAuraAS()->GetMaxHealth());
 	OnManaChanged.Broadcast(GetAuraAS()->GetMana());
 	OnMaxManaChanged.Broadcast(GetAuraAS()->GetMaxMana());
+ 	AttributePointsChangedDelegate.Broadcast(GetAuraPS()->GetPlayerAttributePoints());
+ 	SpellPointsChangedDelegate.Broadcast(GetAuraPS()->GetPlayerSpellPoints());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
@@ -60,6 +62,21 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	}
+
+ 	// Binding to OnAttributePointsChanged 
+ 	GetAuraPS()->OnAttributePointsChangedDelegate.AddLambda(
+		 [this](int32 Points)
+		 {
+			 AttributePointsChangedDelegate.Broadcast(Points);
+		 }
+	 );
+ 	
+ 	// Binding to OnSpellPointsChanged
+ 	GetAuraPS()->OnSpellPointsChangedDelegate.AddLambda(
+		 [this](int32 Points)
+		 {
+			 SpellPointsChangedDelegate.Broadcast(Points);
+		 });
 }
 
 void UOverlayWidgetController::BindAttributeChange(FGameplayAttribute Attribute,

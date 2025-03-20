@@ -6,7 +6,7 @@
 #include "AuraDamageGameplayAbility.h"
 #include "AuraProjectileSpell.generated.h"
 
-class AAuraProjectile;
+class AAuraProjectileSphere;
 class UGameplayEffect;
 struct FGameplayTag;
 /**
@@ -31,7 +31,7 @@ protected:
 		bool bOverridePitch = false, float PitchOverride = 0.f);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AAuraProjectile> ProjectileClass;
+	TSubclassOf<AAuraProjectileSphere> ProjectileClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	FScalableFloat MaxNumProjectiles;

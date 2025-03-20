@@ -4,7 +4,7 @@
 #include "AbilitySystem/Abilities/AuraFireBolt.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
-#include "Actor/AuraProjectile.h"
+#include "Actor/AuraProjectileSphere.h"
 
 void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, const FGameplayTag& SocketTag,
                                      const bool bOverridePitch, const float PitchOverride, AActor* HomingTarget)
@@ -32,7 +32,7 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 		SpawnTransform.SetLocation(SocketLocation);
 		SpawnTransform.SetRotation(Rot.Quaternion());
 
-		AAuraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectile>(
+		AAuraProjectileSphere* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectileSphere>(
 			ProjectileClass,
 			SpawnTransform,
 			GetOwningActorFromActorInfo(),

@@ -2,7 +2,11 @@
 
 
 #include "Checkpoint/Checkpoint.h"
+
+#include "Actor/AuraEnemySpawnVolume.h"
+#include "Character/AuraEnemy.h"
 #include "Components/SphereComponent.h"
+#include "Components/Widget.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/PlayerInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -35,11 +39,19 @@ void ACheckpoint::LoadActor_Implementation()
 	{
 		HandleGlowEffects();
 	}
+	else
+	{
+		if (!bHasRegisteredSpawnVolumes)
+		{
+			RegisterSpawnVolumes();
+		}
+		CheckEnabledState();
+	}
 }
 
 void ACheckpoint::HighlightActor_Implementation()
 {
-	if (!bReached)
+	if (!bReached && bIsCheckpointEnabled)
 	{
 		CheckpointMesh->SetRenderCustomDepth(true);
 	}
@@ -78,12 +90,57 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	}
 }
 
+void ACheckpoint::CheckEnabledState()
+{
+	for (auto Pair : EnemyVolumesState)
+	{
+		if (Pair.Value)
+		{
+			// Volume still has enemies spawned, disable collision and Checkpoint
+			Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			bIsCheckpointEnabled = false;
+			UpdateEnabledState(bIsCheckpointEnabled);
+			return;
+		}
+	}
+	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	bIsCheckpointEnabled = true;
+	UpdateEnabledState(bIsCheckpointEnabled);
+
+}
+
+void ACheckpoint::TrackingVolumeIsClear(AAuraEnemySpawnVolume* SpawnVolume, bool bNewVolumeState)
+{
+	EnemyVolumesState.Add(SpawnVolume, bNewVolumeState);
+	CheckEnabledState();
+}
+
+void ACheckpoint::RegisterSpawnVolumes()
+{
+	for (AAuraEnemySpawnVolume* SpawnVolume : EnemyVolumesToClearBeforeEnabling)
+	{
+		if (IsValid(SpawnVolume))
+		{
+			EnemyVolumesState.Add(SpawnVolume,  SpawnVolume->HasEnemiesAlive());
+			if (SpawnVolume->HasEnemiesAlive())
+				SpawnVolume->GetOnSpawnVolumeStateChangedDelegate().AddDynamic(this, &ACheckpoint::TrackingVolumeIsClear);
+		}
+	}
+	bHasRegisteredSpawnVolumes = true;
+}
+
 void ACheckpoint::BeginPlay()
 {
 	Super::BeginPlay();
 
 	if (bBindOverlapCallback)
 		Sphere->OnComponentBeginOverlap.AddDynamic(this, &ACheckpoint::OnSphereOverlap);
+
+	if (!bHasRegisteredSpawnVolumes)
+	{
+		RegisterSpawnVolumes();
+	}
+	CheckEnabledState();
 }
 
 void ACheckpoint::HandleGlowEffects()

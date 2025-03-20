@@ -62,7 +62,37 @@ public:
 	
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
-	void PlayerDied(ACharacter* DeadCharacter);
+	void PlayerDied(const ACharacter* DeadCharacter) const;
+
+	void LoadAudioSettings() const;
+
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio|Master")
+	TObjectPtr<USoundMix> MasterSoundMix;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio|Master")
+	TObjectPtr<USoundClass> MasterSoundClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio|SFX")
+	TObjectPtr<USoundMix> SFXSoundMix;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio|SFX")
+	TObjectPtr<USoundClass> SFXSoundClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio|Music")
+	TObjectPtr<USoundMix> MusicSoundMix;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Audio|Music")
+	TObjectPtr<USoundClass> MusicSoundClass;
+
+
+	// Manual Appliers
+	void ApplyMasterVolume(const float InMasterVolume) const;
+	void ApplySFXVolume(const float InSFXVolume) const;
+	void ApplyMusicVolume(const float InMusicVolume) const;
+	
+
+	
 };

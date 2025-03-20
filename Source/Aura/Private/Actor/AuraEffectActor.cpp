@@ -15,6 +15,7 @@ AAuraEffectActor::AAuraEffectActor()
 	PrimaryActorTick.bCanEverTick = false;
 
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>("SceneRoot"));
+	RootComponent->SetMobility(EComponentMobility::Type::Movable);
 }
 
 void AAuraEffectActor::BeginPlay()
@@ -27,6 +28,13 @@ void AAuraEffectActor::BeginPlay()
 	{
 		PlayIdleAnimation();
 	}
+}
+
+void AAuraEffectActor::PlayCosmeticEffectsAndDestroy()
+{
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, PickupSystem, GetActorLocation());
+	UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation(), FRotator::ZeroRotator);
+	Destroy();
 }
 
 void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
@@ -55,9 +63,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 
 	if (!bIsInfinite)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, PickupSystem, GetActorLocation());
-		UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation(), FRotator::ZeroRotator);
-		Destroy();
+		PlayCosmeticEffectsAndDestroy();
 	}
 }
 

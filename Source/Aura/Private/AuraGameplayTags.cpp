@@ -343,6 +343,19 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Fire.FireBlast"),
 		FString("FireBlast Ability Tag")
 		);
+
+	GameplayTags.Abilities_Fire_FireNado = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Fire.FireNado"),
+		FString("FireNado Ability Tag")
+		);
+	/*
+	 * Abilities->Fire_Environment
+	 */
+	GameplayTags.Abilities_Fire_DelayedExplosion = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Fire.DelayedExplosion"),
+		FString("Delayed Explosion Ability Tag")
+		);
+	
 	/*
 	 * Abilities->Lightning
 	 */

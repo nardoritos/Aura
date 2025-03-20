@@ -32,12 +32,19 @@ void AMapEntrance::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	{
 		bReached = true;
 
-		if(AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		if (bIsGameOver)
 		{
-			AuraGM->SaveWorldState(GetWorld(), DestinationMap.ToSoftObjectPath().GetAssetName());
+			UGameplayStatics::OpenLevelBySoftObjectPtr(this, DestinationMap);
 		}
-		IPlayerInterface::Execute_SaveProgress(OtherActor, DestinationPlayerStartTag);
+		else
+		{
+			if(AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+			{
+				AuraGM->SaveWorldState(GetWorld(), DestinationMap.ToSoftObjectPath().GetAssetName());
+			}
+			IPlayerInterface::Execute_SaveProgress(OtherActor, DestinationPlayerStartTag);
 
-		UGameplayStatics::OpenLevelBySoftObjectPtr(this, DestinationMap);
+			UGameplayStatics::OpenLevelBySoftObjectPtr(this, DestinationMap);
+		}
 	}
 }

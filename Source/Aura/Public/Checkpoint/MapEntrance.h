@@ -26,11 +26,14 @@ public:
 	virtual void HighlightActor_Implementation() override;
 	/* End Highlight Interface */
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Checkpoint")
 	TSoftObjectPtr<UWorld> DestinationMap;
 
-	UPROPERTY(EditAnywhere)
-	FName DestinationPlayerStartTag;
+	UPROPERTY(EditAnywhere, Category = "Checkpoint")
+	bool bIsGameOver = false;
+	
+	UPROPERTY(EditAnywhere, Category = "Checkpoint")
+	FName DestinationPlayerStartTag = FName();
 
 protected:
 	

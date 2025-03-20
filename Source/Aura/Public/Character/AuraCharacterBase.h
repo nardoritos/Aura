@@ -84,7 +84,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Aura|Combat")
 	float BaseWalkSpeed = 600.f;
-	
+
+public:
 	//** CombatInterface */
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die(const FVector& DeathImpulse) override;
@@ -105,6 +106,7 @@ protected:
 	virtual void SetIsBeingShocked_Implementation(const bool bInIsBeingShocked) override;
 	//** End CombatInterface */
 
+protected:
 	FOnASCRegistered OnASCRegistered;
 	FOnDeathSignature OnDeathDelegate;
 	

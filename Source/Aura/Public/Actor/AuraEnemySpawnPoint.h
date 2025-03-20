@@ -18,7 +18,7 @@ class AURA_API AAuraEnemySpawnPoint : public ATargetPoint
 public:
 	
 	UFUNCTION(BlueprintCallable)
-	void SpawnEnemy();
+	AAuraEnemy* SpawnEnemy() const;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy Class")
 	TSubclassOf<AAuraEnemy> EnemyClass;

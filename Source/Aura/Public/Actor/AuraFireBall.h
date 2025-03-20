@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Actor/AuraProjectile.h"
+#include "Actor/AuraProjectileSphere.h"
 #include "Components/TimelineComponent.h"
 #include "AuraFireBall.generated.h"
 
@@ -12,7 +12,7 @@ class UTimelineComponent;
  * 
  */
 UCLASS()
-class AURA_API AAuraFireBall : public AAuraProjectile
+class AURA_API AAuraFireBall : public AAuraProjectileSphere
 {
 	GENERATED_BODY()
 

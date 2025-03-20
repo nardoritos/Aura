@@ -103,7 +103,17 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 	SetEffectProperties(Data, Props);
 
 	// If Character is dead, do nothing
-	if(Props.TargetCharacter->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetCharacter)) return;
+	const bool bCharacterIsDeadOrNotValid =
+		IsValid(Props.TargetCharacter) &&
+		Props.TargetCharacter->Implements<UCombatInterface>() &&
+		ICombatInterface::Execute_IsDead(Props.TargetCharacter);
+	// Also check if Actor might be a DamageableActor (no character)
+	const bool bActorIsDeadOrNotValid =
+		IsValid(Props.TargetAvatarActor) &&
+		Props.TargetAvatarActor->Implements<UCombatInterface>() &&
+		ICombatInterface::Execute_IsDead(Props.TargetAvatarActor);
+	if(bCharacterIsDeadOrNotValid || bActorIsDeadOrNotValid) return;
+	
 	
 	if(Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
@@ -135,28 +145,31 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		const bool bFatal = NewHealth <= 0.f;
 		if(bFatal)
 		{
-			if(ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
+			if(ICombatInterface* CharacterCombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
 			{
-				CombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle));
+				CharacterCombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle));
 			}
 			SendXPEvent(Props);
 		}
 		else
 		{
-			if (UAuraAbilitySystemLibrary::ShouldHitReact(Props.EffectContextHandle))
+			if (IsValid(Props.TargetCharacter))		
 			{
-				// If the player Should Hit React (e.g. damage incoming from attacks, not debuffs), try to activate GA_HitReact
-				if (Props.TargetCharacter->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsBeingShocked(Props.TargetCharacter))
+				if (UAuraAbilitySystemLibrary::ShouldHitReact(Props.EffectContextHandle))
 				{
-					FGameplayTagContainer TagContainer;
-					TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
-					Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
-				}
+					// If the player Should Hit React (e.g. damage incoming from attacks, not debuffs), try to activate GA_HitReact
+					if (Props.TargetCharacter->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsBeingShocked(Props.TargetCharacter))
+					{
+						FGameplayTagContainer TagContainer;
+						TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
+						Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+					}
 
-				const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
-				if (!KnockbackForce.IsNearlyZero(1.f))
-				{
-					Props.TargetCharacter->LaunchCharacter(KnockbackForce, true, true);
+					const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
+					if (!KnockbackForce.IsNearlyZero(1.f))
+					{
+						Props.TargetCharacter->LaunchCharacter(KnockbackForce, true, true);
+					}
 				}
 			}
 		}
@@ -291,7 +304,7 @@ void UAuraAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute,
 
 void UAuraAttributeSet::SendXPEvent(const FEffectProperties& Props)
 {
-	if(Props.TargetCharacter->Implements<UCombatInterface>())
+	if(Props.TargetCharacter && Props.TargetCharacter->Implements<UCombatInterface>())
 	{
 		const int32 TargetLevel = ICombatInterface::Execute_GetPlayerLevel(Props.TargetCharacter);
 		const ECharacterClass TargetClass = ICombatInterface::Execute_GetCharacterClass(Props.TargetCharacter);
@@ -309,13 +322,23 @@ void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float D
 {
 	if(Props.SourceCharacter != Props.TargetCharacter)
 	{
-		if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller))
+		AActor* ActorToUse = Props.TargetCharacter ? Props.TargetCharacter : Props.TargetAvatarActor;
+		if (ActorToUse)
 		{
-			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
-		}
-		if (AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.TargetCharacter->Controller))
-		{
-			PC->ShowDamageNumber(Damage, Props.TargetCharacter, bBlockedHit, bCriticalHit);
+			if (Props.SourceCharacter)
+			{
+				if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.SourceCharacter->Controller))
+				{
+					PC->ShowDamageNumber(Damage, ActorToUse, bBlockedHit, bCriticalHit);
+				}
+			}
+			if (Props.TargetCharacter)
+			{
+				if (AAuraPlayerController* PC = Cast<AAuraPlayerController>(Props.TargetCharacter->Controller))
+				{
+					PC->ShowDamageNumber(Damage, ActorToUse, bBlockedHit, bCriticalHit);
+				}
+			}
 		}
 	}
 }
@@ -324,7 +347,7 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 {
 	// Source = causer of the effect, Target = target of the effect (owner of THIS AttributeSet) 
 	Props.EffectContextHandle = Data.EffectSpec.GetContext();
-	Props.SourceASC =  Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
+	Props.SourceASC = Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();
 
 	if(IsValid(Props.SourceASC) && Props.SourceASC->AbilityActorInfo.IsValid() && Props.SourceASC->AbilityActorInfo->AvatarActor.IsValid())
 	{
@@ -342,7 +365,7 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 			Props.SourceCharacter = Cast<ACharacter>(Props.SourceController->GetPawn());
 		}
 	}
-
+	
 	if(Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
 	{
 		Props.TargetAvatarActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
@@ -351,6 +374,7 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 
 		Props.TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Props.TargetAvatarActor);
 	}
+
 }
 
 void UAuraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const

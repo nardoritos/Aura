@@ -4,6 +4,7 @@
 #include "Actor/AuraEnemySpawnVolume.h"
 
 #include "Actor/AuraEnemySpawnPoint.h"
+#include "Character/AuraEnemy.h"
 #include "Components/BoxComponent.h"
 #include "Interaction/PlayerInterface.h"
 
@@ -24,14 +25,47 @@ void AAuraEnemySpawnVolume::LoadActor_Implementation()
 {
 	if (bReached)
 	{
+		bHasAliveEnemies = false;
+		OnSpawnVolumeStateChanged.Broadcast(this, bHasAliveEnemies);
 		Destroy();
 	}
+	else
+	{
+		bHasAliveEnemies = true;
+		OnSpawnVolumeStateChanged.Broadcast(this, bHasAliveEnemies);
+		bHasRegisteredEnemyTracking = true;
+	}
+}
+
+bool AAuraEnemySpawnVolume::HasEnemiesAlive()
+{
+	return bHasAliveEnemies;
+}
+
+FChangedEnemiesAliveSignature& AAuraEnemySpawnVolume::GetOnSpawnVolumeStateChangedDelegate()
+{
+	return OnSpawnVolumeStateChanged;
 }
 
 void AAuraEnemySpawnVolume::BeginPlay()
 {
 	Super::BeginPlay();
 	Box->OnComponentBeginOverlap.AddDynamic(this, &AAuraEnemySpawnVolume::OnBoxOverlap);
+
+	if (SpawnPoints.IsEmpty())
+	{
+		bHasAliveEnemies = false;
+		OnSpawnVolumeStateChanged.Broadcast(this, bHasAliveEnemies);
+		Destroy();
+		return;
+	}
+	if (!bHasRegisteredEnemyTracking)
+	{
+		bHasRegisteredEnemyTracking = true;
+		bHasAliveEnemies = true;
+		OnSpawnVolumeStateChanged.Broadcast(this, bHasAliveEnemies);
+	}
+	
 }
 
 void AAuraEnemySpawnVolume::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -45,10 +79,27 @@ void AAuraEnemySpawnVolume::OnBoxOverlap(UPrimitiveComponent* OverlappedComponen
 	{
 		if (IsValid(Point))
 		{
-			Point->SpawnEnemy();
+			AAuraEnemy* SpawnedEnemy = Point->SpawnEnemy();
+			SpawnedEnemy->GetOnDeathDelegate().AddDynamic(this, &AAuraEnemySpawnVolume::SpawnedEnemyHasDied);
+			TrackedEnemies.AddUnique(SpawnedEnemy);
 		}
 	}
 	Box->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
+
+void AAuraEnemySpawnVolume::SpawnedEnemyHasDied(AActor* DeadActor)
+{
+	if (AAuraEnemy* DeadEnemy = Cast<AAuraEnemy>(DeadActor))
+	{
+		if (TrackedEnemies.Contains(DeadEnemy))
+		{
+			TrackedEnemies.Remove(DeadEnemy);
+		}
+	}
+	bHasAliveEnemies = !TrackedEnemies.IsEmpty();
+	OnSpawnVolumeStateChanged.Broadcast(this, bHasAliveEnemies);
+}
+
+
 
 
