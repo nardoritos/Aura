@@ -15,15 +15,17 @@ enum EAbilityDescriptionAdditionalDetails
 {
 	None,
 	NumProjectiles,
-	NumPropagatedTargets
+	NumPropagatedTargets,
+	HealAmount,
+	Duration
 };
 
 USTRUCT(BlueprintType)
-struct FAuraAbilityInfo
+struct FAuraAbilityInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditdefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag AbilityTag = FGameplayTag();
 
 	UPROPERTY(BlueprintReadOnly)
@@ -48,19 +50,19 @@ struct FAuraAbilityInfo
 	TObjectPtr<const UMaterialInterface> BackgroundMaterial = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FString Name;
+	FText Name;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
-	FString Description;
+	FText Description;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
-	FString NextDescription;
+	FText NextDescription;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
-	FString LockedDescription;
+	FText LockedDescription;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
-	TMap<int32 , FString> SpecificLevelDescription;
+	TMap<int32, FText> SpecificLevelDescription;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (MultiLine="true"))
 	TMap<TEnumAsByte<EAbilityDescriptionAdditionalDetails>, FScalableFloat> AdditionalDetails;
@@ -71,26 +73,9 @@ struct FAuraAbilityInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayAbility> Ability;
 
-	FString GetDescription(const int32 InLevel) const;
+	FText GetDescription(const int32 InLevel) const;
 	
-	// Num Projectiles
 	float GetSpecialAttribute(const int32 Level, const EAbilityDescriptionAdditionalDetails AttributeToFind) const;
 	
 };
 
-/**
- * 
- */
-UCLASS()
-class AURA_API UAbilityInfo : public UDataAsset
-{
-	GENERATED_BODY()
-
-public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability Info")
-	TArray<FAuraAbilityInfo> AbilityInformation;
-
-	FAuraAbilityInfo FindAbilityInfoForTag(const FGameplayTag& AbilityTag, bool bLogNotFound = false) const;
-
-};

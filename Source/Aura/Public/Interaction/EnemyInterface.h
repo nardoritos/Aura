@@ -27,4 +27,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	AActor* GetCombatTarget() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetKillingActor(AActor* InKillingActor);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	AActor* GetKillingActor() const;
 };

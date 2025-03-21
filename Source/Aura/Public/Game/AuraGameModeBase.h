@@ -10,7 +10,7 @@ class ULootTiers;
 class UAuraSaveGame;
 class USaveGame;
 class UMVVM_LoadSlot;
-class UAbilityInfo;
+class AAbilityInfo;
 class UCharacterClassInfo;
 
 /**
@@ -27,7 +27,7 @@ public:
 	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Aura|Ability Info")
-	TObjectPtr<UAbilityInfo> AbilityInfo;
+	TObjectPtr<UDataTable> AbilityInfo;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Aura|Loot Tiers")
 	TObjectPtr<ULootTiers> LootTiers;

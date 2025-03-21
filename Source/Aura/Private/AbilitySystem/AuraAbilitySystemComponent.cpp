@@ -158,9 +158,8 @@ void UAuraAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& Inp
 void UAuraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
 {
 	if(!InputTag.IsValid()) return;
-	
+
 	FScopedAbilityListLock ActiveScopeLock(*this);
-	
 	for(FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
 	{
 		if(AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
@@ -306,9 +305,10 @@ FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecWithSlot(const FGamepl
 
 bool UAuraAbilitySystemComponent::IsPassiveAbility(const FGameplayAbilitySpec& Spec) const
 {
-	const UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
 	const FGameplayTag AbilityTag = GetAbilityTagFromSpec(Spec);
-	const FAuraAbilityInfo& Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
+	const FAuraAbilityInfo& Info = *UAuraAbilitySystemLibrary::GetDataTableRowByTag<FAuraAbilityInfo>(
+		UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor()),
+		AbilityTag);
 	const FGameplayTag AbilityType = Info.AbilityType;
 	return AbilityType.MatchesTag(FAuraGameplayTags::Get().Abilities_Type_Passive);
 }
@@ -365,18 +365,24 @@ void UAuraAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& Attribute
 
 void UAuraAbilitySystemComponent::UpdateAbilityStatuses(int32 Level)
 {
-	UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
-	for (const FAuraAbilityInfo& Info : AbilityInfo->AbilityInformation)
+	UDataTable* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
+	TArray<FAuraAbilityInfo*> AbilitiesInfo;
+	AbilityInfo->GetAllRows<FAuraAbilityInfo>(FString(), AbilitiesInfo);
+
+	
+	for (const FAuraAbilityInfo* Info : AbilitiesInfo)
 	{
-		if (!Info.AbilityTag.IsValid()) continue;
-		if (Level < Info.LevelRequirement) continue;
-		if (GetSpecFromAbilityTag(Info.AbilityTag) == nullptr)
+		FAuraAbilityInfo NewInfo = *Info;
+		
+		if (!NewInfo.AbilityTag.IsValid()) continue;
+		if (Level < NewInfo.LevelRequirement) continue;
+		if (GetSpecFromAbilityTag(NewInfo.AbilityTag) == nullptr)
 		{
-			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Info.Ability, 1);
+			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(NewInfo.Ability, 1);
 			AbilitySpec.GetDynamicSpecSourceTags().AddTag(FAuraGameplayTags::Get().Abilities_Status_Eligible);
 			GiveAbility(AbilitySpec);
 			MarkAbilitySpecDirty(AbilitySpec);
-			ClientUpdateAbilityStatus(Info.AbilityTag, FAuraGameplayTags::Get().Abilities_Status_Eligible, 1);
+			ClientUpdateAbilityStatus(NewInfo.AbilityTag, FAuraGameplayTags::Get().Abilities_Status_Eligible, 1);
 		}
 		
 	}

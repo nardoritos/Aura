@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Interaction/CombatInterface.h"
 
 UAuraDamageGameplayAbility::UAuraDamageGameplayAbility()
@@ -17,6 +18,8 @@ UAuraDamageGameplayAbility::UAuraDamageGameplayAbility()
 void UAuraDamageGameplayAbility::AddDefaultActivationBlockedTags()
 {
 	ActivationBlockedTags.AddTag(FAuraGameplayTags::Get().Debuff_Stun);
+	
+	ActivationBlockedTagsToRemove.Add(FAuraGameplayTags::Get().Debuff_Stun);
 }
 
 void UAuraDamageGameplayAbility::AddDefaultBlockAbilitiesWithTag()
@@ -26,6 +29,29 @@ void UAuraDamageGameplayAbility::AddDefaultBlockAbilitiesWithTag()
 	BlockAbilitiesWithTag.AddTag(GameplayTags.Abilities_Fire_FireBolt);
 	BlockAbilitiesWithTag.AddTag(GameplayTags.Abilities_Lightning_Electrocute);
 	BlockAbilitiesWithTag.AddTag(GameplayTags.Abilities_Arcane_ArcaneShards);
+
+	BlockedAbilitiesWithTagsToRemove.Add(GameplayTags.Abilities_Attack);
+	BlockedAbilitiesWithTagsToRemove.Add(GameplayTags.Abilities_Fire_FireBolt);
+	BlockedAbilitiesWithTagsToRemove.Add(GameplayTags.Abilities_Lightning_Electrocute);
+	BlockedAbilitiesWithTagsToRemove.Add(GameplayTags.Abilities_Arcane_ArcaneShards);
+}
+
+void UAuraDamageGameplayAbility::RemoveDefaultBlockedAbilities()
+{
+	FGameplayTagContainer TagsToRemove;
+	for (auto TagToRemove : ActivationBlockedTagsToRemove)
+	{
+		TagsToRemove.AddTag(TagToRemove);
+	}
+	ActivationBlockedTagsToRemove.Empty();
+	
+	for (auto TagToRemove : BlockedAbilitiesWithTagsToRemove)
+	{
+		TagsToRemove.AddTag(TagToRemove);
+	}
+	BlockedAbilitiesWithTagsToRemove.Empty();
+	
+	UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo())->UnBlockAbilitiesWithTags(TagsToRemove);
 }
 
 void UAuraDamageGameplayAbility::CauseDamage(AActor* TargetActor)

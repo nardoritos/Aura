@@ -6,6 +6,7 @@
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "Player/AuraPlayerState.h"
@@ -55,7 +56,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 					FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
 					if(Tag.MatchesTag(MessageTag))
 					{
-						const FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable, Tag);
+						const FUIWidgetRow* Row = UAuraAbilitySystemLibrary::GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable, Tag);
 						MessageWidgetRowDelegate.Broadcast(*Row);
 					}
 				}
@@ -125,8 +126,8 @@ void UOverlayWidgetController::BindAttributeChange(FGameplayAttribute Attribute,
  	LastSlotInfo.AbilityTag = GameplayTags.Abilities_None;
  	// Broadcast empty info if PreviousSlot is a valid slot. Only if equipping an already equipped spell
  	AbilityInfoDelegate.Broadcast(LastSlotInfo);
-
- 	FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
+ 	
+ 	FAuraAbilityInfo Info = *UAuraAbilitySystemLibrary::GetDataTableRowByTag<FAuraAbilityInfo>(AbilityInfo, AbilityTag);
  	Info.StatusTag = Status;
  	Info.InputTag = SlotTag;
  	AbilityInfoDelegate.Broadcast(Info);

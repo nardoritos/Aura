@@ -232,11 +232,28 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	/*
 	 * Meta Attributes
 	 */
+	
+	GameplayTags.Attributes_Meta_IncomingHealthRegen = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Attributes.Meta.IncomingHealthRegen"),
+		FString("Incoming Health Regen Meta Attribute")
+		);
 
+	GameplayTags.Attributes_Meta_IncomingManaRegen = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Attributes.Meta.IncomingManaRegen"),
+		FString("Incoming Mana Regen Meta Attribute")
+		);
+	
 	GameplayTags.Attributes_Meta_IncomingXP = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Attributes.Meta.IncomingXP"),
 		FString("Incoming XP Meta Attribute")
 		);
+
+	/*
+	 * Array of Regenerable Tags that are used in ExecCalc_Regen
+	 */
+
+	GameplayTags.RegenerableTags.Add(GameplayTags.Attributes_Meta_IncomingHealthRegen);
+	GameplayTags.RegenerableTags.Add(GameplayTags.Attributes_Meta_IncomingManaRegen);
 	
 	/*
 	 * Map of Damage Types to Resistances
@@ -286,6 +303,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Hit React Ability Tag")
 		);
 
+	GameplayTags.Abilities_EnemyDeath = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.EnemyDeath"),
+		FString("Enemy Death Ability Tag")
+		);
+	
 	GameplayTags.Abilities_Status_Eligible = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Abilities.Status.Eligible"),
 		FString("Eligible Status")

@@ -39,16 +39,6 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	AutoRun();
 
 	UpdateMagicCircleLocation();
-	// switch (TargetingStatus)
-	// {
-	// case ETargetingStatus::NotTargeting:
-	// 	GEngine->AddOnScreenDebugMessage(0,0.f,FColor::White,TEXT("NotTargeting"));
-	// case ETargetingStatus::TargetingEnemy:
-	// 	GEngine->AddOnScreenDebugMessage(0,0.f,FColor::White,TEXT("TargetingEnemy"));
-	// case ETargetingStatus::TargetingNonEnemy:
-	// 	GEngine->AddOnScreenDebugMessage(0,0.f,FColor::White,TEXT("TargetingNonEnemy"));
-	// }
-	
 }
 
 void AAuraPlayerController::AutoRun()
@@ -324,6 +314,9 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 		if(CursorHit.bBlockingHit) CachedDestination = CursorHit.ImpactPoint;
 		if(APawn* ControlledPawn = GetPawn())
 		{
+			if (bAutoRunning)
+				StopAutoRun();
+			
 			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
 			ControlledPawn->AddMovementInput(WorldDirection);
 		}

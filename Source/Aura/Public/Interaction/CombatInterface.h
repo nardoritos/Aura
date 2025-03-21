@@ -63,7 +63,7 @@ public:
 	UAnimMontage* GetHitReactMontage();
 
 	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void Die(const FVector& DeathImpulse) = 0;
+	virtual void Die(const FVector& DeathImpulse, AActor* KillingActor) = 0;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsDead() const;

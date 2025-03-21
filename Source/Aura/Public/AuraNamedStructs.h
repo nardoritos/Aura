@@ -32,5 +32,12 @@ struct FAuraNamedArguments
 	
 	FString _PropagatedDamage0 = FString("_PropagatedDamage0"); // Current Propagating Damage
 	FString _PropagatedDamage1 = FString("_PropagatedDamage1"); // Next Propagating Damage
+
+	FString _RegenAmount0 = FString("_RegenAmount0"); // Current Regen Amount
+	FString _RegenAmount1 = FString("_RegenAmount1"); // Next Regen Amount
+	
+	FString _Duration0 = FString("_Duration0"); // Current Ability Duration Amount
+	FString _Duration1 = FString("_Duration1"); // Next Ability Duration Amount
+	
 	
 };

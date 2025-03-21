@@ -3,18 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffectTypes.h"
 #include "Data/AbilityInfo.h"
 #include "Data/CharacterClassInfo.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+struct FRegenEffectParams;
 class ULootTiers;
 class UAuraSaveGame;
 struct FDamageEffectParams;
 class UAuraAbilitySystemComponent;
 struct FAuraAbilityInfo;
 struct FGameplayTag;
-class UAbilityInfo;
+class AAbilityInfo;
 class AAuraHUD;
 class USpellMenuWidgetController;
 class UAttributeMenuWidgetController;
@@ -67,7 +69,7 @@ public:
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|CharacterClassDefaults")
-	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
+	static UDataTable* GetAbilityInfo(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|CharacterClassDefaults", meta = (DefaultToSelf = "WorldContextObject", HidePin = "WorldContextObject"))
 	static ULootTiers* GetLootTiers(const UObject* WorldContextObject);
@@ -180,19 +182,28 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
 	static FGameplayEffectContextHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams);
 
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static FGameplayEffectContextHandle ApplyRegenEffect(const FRegenEffectParams& HealingEffectParams);
+	
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|GameplayMechanics")
 	static TArray<FRotator> EvenlySpacedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators);
 
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|GameplayMechanics")
 	static TArray<FVector> EvenlyRotatedVectors(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumVectors);
+
+	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|GameplayMechanics")
+	static FVector GetRandomPointInRadius(const FVector& Origin, const float Radius);
+
+	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|GameplayMechanics")
+	static float GetValueAtLevel(const FScalableFloat& ScalableFloat, const float InLevel);
 	
 	// static float GetRadialDamageWithFalloff(const AActor* TargetActor, const float BaseDamage, const float MinimumDamage, const FVector& Origin,
 	// 	const float DamageInnerRadius, const float DamageOuterRadius, const float DamageFalloff);
 	
 	static int32 GetXPRewardForCharacterClassAndLevel(const UObject* WorldContextObject, ECharacterClass CharacterClass, int32 CharacterLevel);
 	
-	static void GetAbilityDescription(const UAbilityInfo* AbilityInfo, UAuraAbilitySystemComponent* ASC,
-		const FGameplayTag& AbilityTag, const int32 Level, FString& OutDescription, FString& OutNextLevelDescription);
+	static void GetAbilityDescription(UDataTable* AbilityInfo, UAuraAbilitySystemComponent* ASC,
+	                                  const FGameplayTag& AbilityTag, int32 Level, FString& OutDescription, FString& OutNextLevelDescription);
 
 	/*
 	 * Damage Effect Params
@@ -209,6 +220,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
 	static void SetTargetEffectParamsASC(UPARAM(ref) FDamageEffectParams& DamageEffectParams, UAbilitySystemComponent* InASC);
+
+	template<typename T>
+	static T* GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag);
 	
 private:
 	
@@ -217,3 +231,10 @@ private:
 	// Sanitizes Float to have a Min and Max decimal characters of 1
 	static FText SanitizeFloat(const float OriginalValue);
 };
+
+template <typename T>
+T* UAuraAbilitySystemLibrary::GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag)
+{
+	return DataTable->FindRow<T>(Tag.GetTagName(), TEXT(""));
+}
+	

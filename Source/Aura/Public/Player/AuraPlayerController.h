@@ -65,10 +65,10 @@ private:
 	void ShiftPressed() { bShiftKeyDown = true; }
 	void ShiftReleased() { bShiftKeyDown = false; }
 	void OpenPauseMenu();
+	
 	bool bShiftKeyDown = false;
 	
 	void Move(const struct FInputActionValue& InputActionValue);
-	
 	
 	void CursorTrace();
 

@@ -175,6 +175,14 @@ public:
 	 */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingHealthRegen;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingHealthRegen)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingManaRegen;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingManaRegen)
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
 	FGameplayAttributeData IncomingDamage;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage)
 
@@ -245,6 +253,9 @@ public:
 	void OnRep_PhysicalResistance(const FGameplayAttributeData& OldPhysicalResistance) const;
 	
 private:
+
+	void HandleIncomingHealthRegen(const FEffectProperties& Props);
+	void HandleIncomingManaRegen(const FEffectProperties& Props);
 	void HandleIncomingDamage(const FEffectProperties& Props);
 	void HandleIncomingXP(const FEffectProperties& Props);
 	void HandleDebuff(const FEffectProperties& Props);

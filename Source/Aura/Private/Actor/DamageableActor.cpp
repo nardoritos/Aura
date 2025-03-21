@@ -36,7 +36,7 @@ ADamageableActor::ADamageableActor()
 	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");
 }
 
-void ADamageableActor::Die(const FVector& DeathImpulse)
+void ADamageableActor::Die(const FVector& DeathImpulse, AActor* KillingActor)
 {
 	SetLifeSpan(LifeSpan);
 	SpawnLoot();
@@ -206,7 +206,7 @@ void ADamageableActor::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	if (IsValid(OtherActor) && OtherActor->Implements<UCombatInterface>() && !OtherActor->ActorHasTag(FName("DamageableActor")))
 	{
-		Die(FVector::ZeroVector);
+		Die(FVector::ZeroVector, OtherActor);
 	}
 }
 

@@ -123,6 +123,14 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 	{
 		SetMana(FMath::Clamp(GetMana(), 0, GetMaxMana()));
 	}
+	if(Data.EvaluatedData.Attribute == GetIncomingHealthRegenAttribute())
+	{
+		HandleIncomingHealthRegen(Props);	
+	}
+	if(Data.EvaluatedData.Attribute == GetIncomingManaRegenAttribute())
+	{
+		HandleIncomingManaRegen(Props);	
+	}
 	if(Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
 	{
 		HandleIncomingDamage(Props);
@@ -133,6 +141,33 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 	}
 	
 }
+
+void UAuraAttributeSet::HandleIncomingHealthRegen(const FEffectProperties& Props)
+{
+	const float LocalIncomingHealthRegen = GetIncomingHealthRegen();
+	SetIncomingHealthRegen(0);
+	if (LocalIncomingHealthRegen > 0.f)
+	{
+		const float NewHealth = GetHealth() + LocalIncomingHealthRegen;
+		SetHealth(FMath::Clamp(NewHealth, 0, GetMaxHealth()));
+
+		ShowFloatingText(Props, LocalIncomingHealthRegen, false, false);
+	}
+}
+
+void UAuraAttributeSet::HandleIncomingManaRegen(const FEffectProperties& Props)
+{
+	const float LocalIncomingManaRegen = GetIncomingManaRegen();
+	SetIncomingManaRegen(0);
+	if (LocalIncomingManaRegen > 0.f)
+	{
+		const float NewMana = GetMana() + LocalIncomingManaRegen;
+		SetMana(FMath::Clamp(NewMana, 0, GetMaxMana()));
+
+		ShowFloatingText(Props, LocalIncomingManaRegen, false, false);
+	}
+}
+
 void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 {
 	const float LocalIncomingDamage = GetIncomingDamage();
@@ -147,7 +182,7 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		{
 			if(ICombatInterface* CharacterCombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor))
 			{
-				CharacterCombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle));
+				CharacterCombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle), Props.SourceAvatarActor);
 			}
 			SendXPEvent(Props);
 		}
@@ -182,6 +217,10 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 		{
 			HandleDebuff(Props);
 		}
+	}
+	else
+	{
+		ShowFloatingText(Props, 0, true, false);
 	}
 }
 
@@ -476,5 +515,4 @@ void UAuraAttributeSet::OnRep_PhysicalResistance(const FGameplayAttributeData& O
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, PhysicalResistance, OldPhysicalResistance);
 }
-
 

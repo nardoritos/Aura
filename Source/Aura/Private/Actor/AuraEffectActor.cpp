@@ -24,7 +24,7 @@ void AAuraEffectActor::BeginPlay()
 	
 	SetCollisionState(bShouldSpawnWithCollisionEnabled);
 
-	if (!bShouldSpawnWithCollisionEnabled)
+	if (bShouldSpawnWithCollisionEnabled)
 	{
 		PlayIdleAnimation();
 	}

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AuraWidgetController.generated.h"
 
-class UAbilityInfo;
+class AAbilityInfo;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, int32, NewValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FAuraAbilityInfo&, Info);
 
@@ -66,7 +66,7 @@ public:
 protected:
 		
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
-	TObjectPtr<UAbilityInfo> AbilityInfo;
+	TObjectPtr<UDataTable> AbilityInfo;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APlayerController> PlayerController;

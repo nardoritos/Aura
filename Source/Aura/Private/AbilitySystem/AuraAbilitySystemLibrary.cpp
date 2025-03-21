@@ -10,6 +10,8 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/AuraDamageGameplayAbility.h"
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
+#include "AbilitySystem/Abilities/AuraRegenerativePassiveAbility.h"
+#include "Aura/AuraLogChannels.h"
 #include "Engine/DamageEvents.h"
 #include "Game/AuraGameModeBase.h"
 #include "Game/AuraSaveGame.h"
@@ -159,30 +161,31 @@ int32 UAuraAbilitySystemLibrary::GetXPRewardForCharacterClassAndLevel(const UObj
 
 	return static_cast<int32>(XPReward);
 }
-
-void UAuraAbilitySystemLibrary::GetAbilityDescription(const UAbilityInfo* AbilityInfo, UAuraAbilitySystemComponent* ASC,
-		const FGameplayTag& AbilityTag, const int32 Level, FString& OutDescription, FString& OutNextLevelDescription)
+#define LOCTEXT_NAMESPACE "Abilities"
+void UAuraAbilitySystemLibrary::GetAbilityDescription(UDataTable* AbilityInfo, UAuraAbilitySystemComponent* ASC,
+                                                      const FGameplayTag& AbilityTag, const int32 Level, FString& OutDescription, FString& OutNextLevelDescription)
 {
-	const FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
+	const FAuraAbilityInfo Info = *GetDataTableRowByTag<FAuraAbilityInfo>(AbilityInfo, AbilityTag); 
 	
-	FText Description = FText::FromString(Info.GetDescription(Level));
-	FText NextLevelDescription = FText::FromString(Info.NextDescription);
-	FText LockedDescription = FText::FromString(Info.LockedDescription);
+	FText Description = Info.GetDescription(Level);
+	FText NextLevelDescription = Info.NextDescription;
+	FText LockedDescription = Info.LockedDescription;
 	
 	UGameplayAbility* Ability = Info.Ability.GetDefaultObject();
-
-	FText CommonDescription = FText::FromString(""
+	
+	FText CommonDescription = FText(LOCTEXT("AbilityCommonDescription",
 		"<Default>Cooldown: </><Cooldown>{_CD0}s</>\n"
-		"<Default>Cost: </><ManaCost>{_Mana0}</>");
+		"<Default>Cost: </><ManaCost>{_Mana0}</>"));
 	
-	FText CommonNextLevelDescription = FText::FromString(""
+	FText CommonNextLevelDescription = FText(LOCTEXT("AbilityCommonNextLevelDescription",
 		"<Default>Cooldown: </><Old>{_CD0}s</>-><Cooldown>{_CD1}s</>\n"
-		"<Default>Cost: </><Old>{_Mana0}</>-><ManaCost>{_Mana1}</>"); 
-	
+		"<Default>Cost: </><Old>{_Mana0}</>-><ManaCost>{_Mana1}</>")); 
+	const FText LevelText = FText(LOCTEXT("AbilityLevelText", "Level"));
+	const FText NextLevelText = FText(LOCTEXT("AbilityNextLevelText", "NEXT LEVEL"));
 	
 	if (const FGameplayAbilitySpec* AbilitySpec = ASC->GetSpecFromAbilityTag(AbilityTag))
 	{
-		if(Cast<UAuraGameplayAbility>(AbilitySpec->Ability))
+		if(Cast<UAuraDamageGameplayAbility>(AbilitySpec->Ability))
 		{
 			FormatAbilityDescriptionAtLevel(Ability, Info, Level, Description);
 			FormatAbilityDescriptionAtLevel(Ability, Info, Level, NextLevelDescription);
@@ -192,27 +195,57 @@ void UAuraAbilitySystemLibrary::GetAbilityDescription(const UAbilityInfo* Abilit
 			// Ability is Eligible, Unlocked or Equipped
 			OutDescription = FString::Printf(TEXT(
 				"<Title>%s</>\n"
-				"<SubTitle>Level </><Level>%i</>\n\n"
+				"<SubTitle>%s </><Level>%i</>\n\n"
 				"%s\n\n"
 				"%s"
 				
 				),
-				*Info.Name,
+				*Info.Name.ToString(),
+				*LevelText.ToString(),
 				Level,
 				*Description.ToString(),
 				*CommonDescription.ToString()
 				);
 			OutNextLevelDescription = FString::Printf(TEXT(
-				"<Title>NEXT LEVEL:</>\n"
+				"<Title>%s:</>\n"
 				"<SubTitle>Level </><Old>%i</><SubTitle>-></><Level>%i</>\n\n"
 				"%s\n\n"
 				"%s"
 				
 				),
+				*NextLevelText.ToString(),
 				Level,
 				Level + 1,
 				*NextLevelDescription.ToString(),
 				*CommonNextLevelDescription.ToString()
+				);
+			return;
+		}
+		if (Cast<UAuraRegenerativePassiveAbility>(AbilitySpec->Ability))
+		{
+			FormatAbilityDescriptionAtLevel(Ability, Info, Level, Description);
+			FormatAbilityDescriptionAtLevel(Ability, Info, Level, NextLevelDescription);
+			
+			// Ability is Eligible, Unlocked or Equipped
+			OutDescription = FString::Printf(TEXT(
+				"<Title>%s</>\n"
+				"<SubTitle>Level </><Level>%i</>\n\n"
+				"%s"
+				
+				),
+				*Info.Name.ToString(),
+				Level,
+				*Description.ToString()
+				);
+			OutNextLevelDescription = FString::Printf(TEXT(
+				"<Title>NEXT LEVEL:</>\n"
+				"<SubTitle>Level </><Old>%i</><SubTitle>-></><Level>%i</>\n\n"
+				"%s"
+				
+				),
+				Level,
+				Level + 1,
+				*NextLevelDescription.ToString()
 				);
 			return;
 		}
@@ -236,6 +269,7 @@ void UAuraAbilitySystemLibrary::GetAbilityDescription(const UAbilityInfo* Abilit
 	OutNextLevelDescription = FString();
 		
 }
+#undef LOCTEXT_NAMESPACE
 void UAuraAbilitySystemLibrary::SetIsRadialDamageEffectParam(FDamageEffectParams& DamageEffectParams, bool bIsRadial, float InnerRadius, float OuterRadius, FVector Origin)
 {
 	DamageEffectParams.bIsRadialDamage = bIsRadial;
@@ -299,9 +333,19 @@ void UAuraAbilitySystemLibrary::FormatAbilityDescriptionAtLevel(UGameplayAbility
 			Args._NumProjectiles0, AbilityInfo.GetSpecialAttribute(Level, NumProjectiles),
 			Args._NumProjectiles1, AbilityInfo.GetSpecialAttribute(Level + 1, NumProjectiles),
 			Args._NumPropagatedTargets0, AbilityInfo.GetSpecialAttribute(Level, NumPropagatedTargets),
-			Args._NumPropagatedTargets1, AbilityInfo.GetSpecialAttribute(Level + 1, NumPropagatedTargets)
-
-			
+			Args._NumPropagatedTargets1, AbilityInfo.GetSpecialAttribute(Level + 1, NumPropagatedTargets),
+			Args._Duration0, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level, Duration)),
+			Args._Duration1, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level + 1, Duration))
+		);
+	}
+	else if (const UAuraRegenerativePassiveAbility* RegenAbility = Cast<UAuraRegenerativePassiveAbility>(Ability))
+	{
+		OutDescription = FText::FormatNamed(
+			OutDescription,
+			Args._Level0, Level,
+			Args._Level1, Level + 1,
+			Args._RegenAmount0, SanitizeFloat(RegenAbility->RegenAmount.GetValueAtLevel(Level)),
+			Args._RegenAmount1, SanitizeFloat(RegenAbility->RegenAmount.GetValueAtLevel(Level + 1))
 		);
 	}
 	else
@@ -326,7 +370,7 @@ UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObj
 	return AuraGameMode->CharacterClassInfo;
 }
 
-UAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldContextObject)
+UDataTable* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldContextObject)
 {
 	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
 	if(AuraGameMode == nullptr) return nullptr;
@@ -720,8 +764,30 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 	return EffectContextHandle;	
 }
 
+FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyRegenEffect(
+	const FRegenEffectParams& HealingEffectParams)
+{
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();	
+	UAbilitySystemComponent* ASCToHeal = HealingEffectParams.TargetAbilitySystemComponent;
+
+	// Changed from always using SourceAvatar to deciding to which one's available, so it can be used in other objects
+	const AActor* TargetAvatarActor = ASCToHeal->GetAvatarActor();
+	FGameplayEffectContextHandle EffectContextHandle = ASCToHeal->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(TargetAvatarActor);
+	
+	FGameplayEffectSpecHandle SpecHandle = ASCToHeal->MakeOutgoingSpec(
+		HealingEffectParams.RegenGameplayEffectClass, HealingEffectParams.AbilityLevel, EffectContextHandle);
+
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,
+		HealingEffectParams.RegenType, HealingEffectParams.BaseRegen.GetValueAtLevel(HealingEffectParams.AbilityLevel));
+	
+	HealingEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+
+	return EffectContextHandle;	
+}
+
 TArray<FRotator> UAuraAbilitySystemLibrary::EvenlySpacedRotators(const FVector& Forward, const FVector& Axis,
-	const float Spread, const int32 NumRotators)
+                                                                 const float Spread, const int32 NumRotators)
 {
 	TArray<FRotator> Rotators;
 	
@@ -766,4 +832,16 @@ TArray<FVector> UAuraAbilitySystemLibrary::EvenlyRotatedVectors(const FVector& F
 		Vectors.Add(Forward);
 	}
 	return Vectors;
+}
+
+FVector UAuraAbilitySystemLibrary::GetRandomPointInRadius(const FVector& Origin, const float Radius)
+{
+	const FVector2D RandomPoint2D = FMath::RandPointInCircle(Radius);
+	const FVector RandomPoint3D = FVector(RandomPoint2D.X, RandomPoint2D.Y, 0); 
+	return Origin + RandomPoint3D;
+}
+
+float UAuraAbilitySystemLibrary::GetValueAtLevel(const FScalableFloat& ScalableFloat, const float InLevel)
+{
+	return ScalableFloat.GetValueAtLevel(InLevel);
 }

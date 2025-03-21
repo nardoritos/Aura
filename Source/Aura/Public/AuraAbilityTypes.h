@@ -1,9 +1,37 @@
 ﻿#pragma once
 
 #include "GameplayEffectTypes.h"
+#include "ScalableFloat.h"
 #include "AuraAbilityTypes.generated.h"
 
 class UGameplayEffect;
+
+USTRUCT(BlueprintType)
+struct FRegenEffectParams
+{
+	GENERATED_BODY()
+
+	FRegenEffectParams(){}
+	
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UObject> WorldContextObject = nullptr;
+
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTag RegenType = FGameplayTag();
+	
+	UPROPERTY(BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> RegenGameplayEffectClass;
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent;
+
+	UPROPERTY(BlueprintReadWrite)
+	FScalableFloat BaseRegen;
+
+	UPROPERTY(BlueprintReadWrite)
+	float AbilityLevel = 1.f;
+	
+};
 
 USTRUCT(BlueprintType)
 struct FDamageEffectParams

@@ -11,6 +11,8 @@
  * Singleton containing native GameplayTags
  */
 
+struct FGameplayAttribute;
+
 struct FAuraGameplayTags
 {
 public:
@@ -42,8 +44,9 @@ public:
 	FGameplayTag Attributes_Resistance_Physical;
 
 	// Meta Attributes
+	FGameplayTag Attributes_Meta_IncomingHealthRegen;
+	FGameplayTag Attributes_Meta_IncomingManaRegen;
 	FGameplayTag Attributes_Meta_IncomingXP;
-	
 
 	// Input Tags
 	FGameplayTag InputTag_LMB;
@@ -84,6 +87,8 @@ public:
 	
 	FGameplayTag Abilities_HitReact;
 
+	FGameplayTag Abilities_EnemyDeath;
+	
 	FGameplayTag Abilities_Status_Locked;
 	FGameplayTag Abilities_Status_Unlocked;
 	FGameplayTag Abilities_Status_Eligible;
@@ -139,7 +144,9 @@ public:
 	FGameplayTag Montage_Attack_2;
 	FGameplayTag Montage_Attack_3;
 	FGameplayTag Montage_Attack_4;
-	
+
+	// Array of Regenerable Tags that are used in ExecCalc_Regen
+	TArray<FGameplayTag> RegenerableTags;
 	
 	// Maps each Damage Type Tag with their own Resistance Tag
 	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;

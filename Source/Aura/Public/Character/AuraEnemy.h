@@ -36,7 +36,7 @@ public:
 
 	/* Combat Interface */
 	virtual int32 GetPlayerLevel_Implementation() override;
-	virtual void Die(const FVector& DeathImpulse) override;
+	virtual void Die(const FVector& DeathImpulse, AActor* InKillingActor) override;
 	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
 	virtual AActor* GetCombatTarget_Implementation() const override;
 	/* End Combat Interface*/
@@ -45,6 +45,11 @@ public:
 	virtual bool ShouldLoadTransform_Implementation() override {return false;}
 	virtual void LoadActor_Implementation() override;
 	/* End Save Interface */
+
+	/* Enemy Interface */
+	virtual AActor* GetKillingActor_Implementation() const override;
+	virtual void SetKillingActor_Implementation(AActor* InKillingActor) override;
+	/* End Enemy Interface*/
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChangedSignature OnHealthChanged;
@@ -63,6 +68,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
 	TObjectPtr<AActor> CombatTarget;
 
+	UPROPERTY()
+	TObjectPtr<AActor> KillingActor;
+	
 	void SetLevel(int32 InLevel) {Level = InLevel;}
 	
 protected:
@@ -87,4 +95,6 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void SpawnLoot();
+
+
 };

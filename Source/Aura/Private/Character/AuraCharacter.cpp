@@ -286,9 +286,9 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 		SaveAbilityDelegate.BindLambda([this, AuraASC, SaveData](const FGameplayAbilitySpec& AbilitySpec)
 		{
 			const FGameplayTag AbilityTag = AuraASC->GetAbilityTagFromSpec(AbilitySpec);
-			UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(this);
-			FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);
-
+			const FAuraAbilityInfo Info = *UAuraAbilitySystemLibrary::GetDataTableRowByTag<FAuraAbilityInfo>(
+				UAuraAbilitySystemLibrary::GetAbilityInfo(this), AbilityTag);
+		
 			FSavedAbility SavedAbility;
 			SavedAbility.GameplayAbility = Info.Ability;
 			SavedAbility.AbilityLevel = AbilitySpec.Level;
@@ -322,9 +322,9 @@ int32 AAuraCharacter::GetPlayerLevel_Implementation()
 	return AuraPlayerState->GetPlayerLevel();
 }
 
-void AAuraCharacter::Die(const FVector& DeathImpulse)
+void AAuraCharacter::Die(const FVector& DeathImpulse, AActor* KillingActor)
 {
-	Super::Die(DeathImpulse);
+	Super::Die(DeathImpulse, KillingActor);
 
 	FTimerDelegate DeathTimerDelegate;
 	DeathTimerDelegate.BindLambda([this]()

@@ -8,7 +8,7 @@
 #include "OverlayWidgetController.generated.h"
 
 class UAuraAbilitySystemComponent;
-class UAbilityInfo;
+class AAbilityInfo;
 struct FGameplayAttribute;
 struct FAuraAbilityInfo;
 
@@ -82,8 +82,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data", meta = (RequiredAssetDataTags = "RowStructure=/Script/Aura.UIWidgetRow"))
 	TObjectPtr<UDataTable> MessageWidgetDataTable;
 	
-	template<typename T>
-	T* GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag);
+
 
 	void BindAttributeChange(FGameplayAttribute Attribute, FOnAttributeChangedSignature& AttributeData);
 
@@ -92,8 +91,3 @@ protected:
 	void OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status, const FGameplayTag& SlotTag, const FGameplayTag& PrevSlot) const;
 };
 
-template <typename T>
-T* UOverlayWidgetController::GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag)
-{
-	return DataTable->FindRow<T>(Tag.GetTagName(), TEXT(""));
-}

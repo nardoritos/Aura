@@ -3,6 +3,7 @@
 
 #include "Character/AuraEnemy.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
@@ -14,6 +15,7 @@
 #include "Aura/AuraLogChannels.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Character/AuraCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AAuraEnemy::AAuraEnemy()
@@ -78,14 +80,28 @@ int32 AAuraEnemy::GetPlayerLevel_Implementation()
 	return Level;
 }
 
-void AAuraEnemy::Die(const FVector& DeathImpulse)
+void AAuraEnemy::Die(const FVector& DeathImpulse, AActor* InKillingActor)
 {
 	SetLifeSpan(LifeSpan);
 	if (AuraAIController) AuraAIController->GetBlackboardComponent()->SetValueAsBool("Dead", true);
-
+	if (AAuraCharacter* KillingCharacter =  Cast<AAuraCharacter>(InKillingActor))
+	{
+		Execute_SetKillingActor(this, KillingCharacter);
+		
+		FGameplayEventData Payload;
+		Payload.EventTag = FAuraGameplayTags::Get().Abilities_EnemyDeath;
+		Payload.EventMagnitude = Level;
+		Payload.Instigator = this; // Enemy that died
+		Payload.Target = KillingActor; // Player that Killed this enemy
+		
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+			KillingCharacter,
+			FAuraGameplayTags::Get().Abilities_EnemyDeath,
+			Payload);
+	}
 	SpawnLoot();
 	
-	Super::Die(DeathImpulse);
+	Super::Die(DeathImpulse, KillingActor);
 }
 
 void AAuraEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget)
@@ -106,6 +122,16 @@ void AAuraEnemy::LoadActor_Implementation()
 		UE_LOG(LogAura, Log, TEXT("Was dead, destroying..."))
 		Destroy();
 	}
+}
+
+AActor* AAuraEnemy::GetKillingActor_Implementation() const
+{
+	return KillingActor;
+}
+
+void AAuraEnemy::SetKillingActor_Implementation(AActor* InKillingActor)
+{
+	KillingActor = InKillingActor;
 }
 
 void AAuraEnemy::BeginPlay()

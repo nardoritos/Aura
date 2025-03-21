@@ -24,7 +24,7 @@ public:
 protected:
 
 	/* Combat Interface */
-	virtual void Die(const FVector& DeathImpulse) override;
+	virtual void Die(const FVector& DeathImpulse, AActor* KillingActor) override;
 	virtual FOnASCRegistered& GetOnASCRegisteredDelegate() override;
 	virtual FOnDeathSignature& GetOnDeathDelegate() override;
 	virtual bool IsDead_Implementation() const override;

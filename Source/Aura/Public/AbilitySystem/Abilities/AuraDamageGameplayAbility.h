@@ -48,6 +48,16 @@ public:
 
 	// Block Abilities with Tag
 	void AddDefaultBlockAbilitiesWithTag();
+
+	// Remove manually the tags added before
+	UFUNCTION(BlueprintCallable)
+	void RemoveDefaultBlockedAbilities();
+
+	UPROPERTY()
+	TArray<FGameplayTag> BlockedAbilitiesWithTagsToRemove;
+
+	UPROPERTY()
+	TArray<FGameplayTag> ActivationBlockedTagsToRemove;
 	
 protected:
 	

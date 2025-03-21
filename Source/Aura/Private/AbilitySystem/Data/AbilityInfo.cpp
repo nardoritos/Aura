@@ -6,7 +6,7 @@
 #include "AuraGameplayTags.h"
 #include "Aura/AuraLogChannels.h"
 
-FString FAuraAbilityInfo::GetDescription(const int32 InLevel) const
+FText FAuraAbilityInfo::GetDescription(const int32 InLevel) const
 {
 	if (SpecificLevelDescription.Contains(InLevel))
 	{
@@ -22,20 +22,20 @@ float FAuraAbilityInfo::GetSpecialAttribute(const int32 Level, const EAbilityDes
 	return -999.f;
 }
 
-FAuraAbilityInfo UAbilityInfo::FindAbilityInfoForTag(const FGameplayTag& AbilityTag, bool bLogNotFound) const
-{
-	for (auto Info : AbilityInformation)
-	{
-		if (Info.AbilityTag == AbilityTag)
-		{
-			return Info;
-		}
-		
-	}
-	if (bLogNotFound)
-	{
-		UE_LOG(LogAura, Error, TEXT("Can't find Info for AbilityTag [%s] on AbilityInfo [%s]"), *AbilityTag.ToString(), *GetNameSafe(this));
-	}
-
-	return FAuraAbilityInfo();
-}
+// FAuraAbilityInfo AAbilityInfo::FindAbilityInfoForTag(const FGameplayTag& AbilityTag, bool bLogNotFound) const
+// {
+// 	for (auto Info : AbilityInformation)
+// 	{
+// 		if (Info.AbilityTag == AbilityTag)
+// 		{
+// 			return Info;
+// 		}
+// 		
+// 	}
+// 	if (bLogNotFound)
+// 	{
+// 		UE_LOG(LogAura, Error, TEXT("Can't find Info for AbilityTag [%s] on AbilityInfo [%s]"), *AbilityTag.ToString(), *GetNameSafe(this));
+// 	}
+//
+// 	return FAuraAbilityInfo();
+// }

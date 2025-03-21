@@ -18,12 +18,21 @@ class AURA_API AAuraProjectileBase : public AActor
 public:
 	AAuraProjectileBase();
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+	bool bShouldCauseDamage = true;
+	
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
 	FDamageEffectParams DamageEffectParams;
 
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+	FRegenEffectParams HealingEffectParams;
+	
+	UFUNCTION(BlueprintCallable)
+	void SetHomingTarget(AActor* HomingTargetActor, FVector FallbackLocation);
+	
 	UPROPERTY()
 	TObjectPtr<USceneComponent> HomingTargetSceneComponent;
 
