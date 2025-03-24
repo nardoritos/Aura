@@ -8,7 +8,6 @@
 #include "Aura/Aura.h"
 #include "Components/BoxComponent.h"
 
-
 AAuraProjectileBox::AAuraProjectileBox()
 {
 	Box = CreateDefaultSubobject<UBoxComponent>("Box");

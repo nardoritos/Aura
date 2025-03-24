@@ -47,7 +47,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Beam")
 	TObjectPtr<ACharacter> OwnerCharacter;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Beam")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Beam")
 	FName WeaponSocket = FName("TipSocket");
 
 	UPROPERTY(EditDefaultsOnly, Category = "Beam")

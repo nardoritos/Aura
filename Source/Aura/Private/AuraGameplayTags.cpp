@@ -3,6 +3,7 @@
 
 #include "AuraGameplayTags.h"
 #include "GameplayTagsManager.h"
+#include "../../../../../Unreal/UE_5.5/Engine/Plugins/Editor/GameplayTagsEditor/Source/GameplayTagsEditor/Private/GameplayTagEditorUtilities.h"
 
 FAuraGameplayTags FAuraGameplayTags::GameplayTags;
 
@@ -392,6 +393,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Electrocute Ability Tag")
 		);
 
+	GameplayTags.Abilities_Lightning_ElectroBall = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Lightning.ElectroBall"),
+		FString("ElectroBall Ability Tag")
+		);
+	
 	/*
 	 * Abilities->Arcane
 	 */
@@ -444,6 +450,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FString("Electrocute Cooldown Tag")
 		);
 
+	GameplayTags.Cooldown_Lightning_ElectroBall = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Cooldown.Lightning.ElectroBall"),
+		FString("ElectroBall Cooldown Tag")
+		);
+	
 	GameplayTags.Cooldown_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Cooldown.Arcane.ArcaneShards"),
 		FString("Arcane Shards Cooldown Tag")

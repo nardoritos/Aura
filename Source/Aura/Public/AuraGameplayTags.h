@@ -113,6 +113,7 @@ public:
 	// Ability Types->Lightning
 	FGameplayTag Abilities_Lightning;
 	FGameplayTag Abilities_Lightning_Electrocute;
+	FGameplayTag Abilities_Lightning_ElectroBall;
 
 	// Ability Types->Arcane
 	FGameplayTag Abilities_Arcane;
@@ -124,6 +125,7 @@ public:
 	
 	// Ability Cooldowns->Lightning
 	FGameplayTag Cooldown_Lightning_Electrocute;
+	FGameplayTag Cooldown_Lightning_ElectroBall;
 
 	// Ability Cooldowns->Arcane
 	FGameplayTag Cooldown_Arcane_ArcaneShards;
