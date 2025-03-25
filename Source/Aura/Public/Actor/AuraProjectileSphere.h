@@ -28,5 +28,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USphereComponent> Sphere;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bShouldBindToMainSphere = true;
 	
 };

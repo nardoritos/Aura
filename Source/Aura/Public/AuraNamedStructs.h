@@ -21,6 +21,7 @@ struct FAuraNamedArguments
 
 	FString _FDmg0 = FString("_FDmg0"); // Current Damage
 	FString _FDmg1 = FString("_FDmg1"); // Next Damage
+	
 	FString _FDmg0Half = FString("_FDmg0Half"); // Current Damage / 2
 	FString _FDmg1Half = FString("_FDmg1Half"); // Next Damage / 2
 	
@@ -38,6 +39,8 @@ struct FAuraNamedArguments
 	
 	FString _Duration0 = FString("_Duration0"); // Current Ability Duration Amount
 	FString _Duration1 = FString("_Duration1"); // Next Ability Duration Amount
-	
+
+	FString _Radius0 = FString("_Radius0"); // Current Ability Radius 
+	FString _Radius1 = FString("_Radius1"); // Next Ability Radius 
 	
 };

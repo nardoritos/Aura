@@ -17,7 +17,8 @@ enum EAbilityDescriptionAdditionalDetails
 	NumProjectiles,
 	NumPropagatedTargets,
 	HealAmount,
-	Duration
+	Duration,
+	Radius
 };
 
 USTRUCT(BlueprintType)

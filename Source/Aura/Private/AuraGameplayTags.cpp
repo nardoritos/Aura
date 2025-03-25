@@ -397,7 +397,12 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Lightning.ElectroBall"),
 		FString("ElectroBall Ability Tag")
 		);
-	
+
+	GameplayTags.Abilities_Lightning_ElectricalStorm = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Lightning.ElectricalStorm"),
+		FString("ElectricalStorm Ability Tag")
+		);
+
 	/*
 	 * Abilities->Arcane
 	 */
@@ -453,6 +458,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Cooldown_Lightning_ElectroBall = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Cooldown.Lightning.ElectroBall"),
 		FString("ElectroBall Cooldown Tag")
+		);
+
+	GameplayTags.Abilities_Lightning_ElectricalStorm = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Cooldown.Lightning.ElectricalStorm"),
+		FString("ElectricalStorm Cooldown Tag")
 		);
 	
 	GameplayTags.Cooldown_Arcane_ArcaneShards = UGameplayTagsManager::Get().AddNativeGameplayTag(

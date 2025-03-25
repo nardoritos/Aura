@@ -335,7 +335,9 @@ void UAuraAbilitySystemLibrary::FormatAbilityDescriptionAtLevel(UGameplayAbility
 			Args._NumPropagatedTargets0, AbilityInfo.GetSpecialAttribute(Level, NumPropagatedTargets),
 			Args._NumPropagatedTargets1, AbilityInfo.GetSpecialAttribute(Level + 1, NumPropagatedTargets),
 			Args._Duration0, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level, Duration)),
-			Args._Duration1, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level + 1, Duration))
+			Args._Duration1, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level + 1, Duration)),
+			Args._Radius0, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level, Radius)),
+			Args._Radius1, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level + 1, Radius))
 		);
 	}
 	else if (const UAuraRegenerativePassiveAbility* RegenAbility = Cast<UAuraRegenerativePassiveAbility>(Ability))

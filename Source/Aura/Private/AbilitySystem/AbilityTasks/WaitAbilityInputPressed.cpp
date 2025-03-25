@@ -16,18 +16,6 @@ void UWaitAbilityInputPressed::OnPressCallback(const FGameplayTag& ReceivedInput
 	}
 	ASC->OnInputTagPressed.Remove(DelegateHandle);
 	
-	// FScopedPredictionWindow ScopedPrediction(ASC, IsPredictingClient());
-	//
-	// if (IsPredictingClient())
-	// {
-	// 	// Tell the server about this
-	// 	ASC->ServerSetReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, GetAbilitySpecHandle(), GetActivationPredictionKey(), ASC->ScopedPredictionKey);
-	// }
-	// else
-	// {
-	// 	ASC->ConsumeGenericReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, GetAbilitySpecHandle(), GetActivationPredictionKey());
-	// }
-
 	// We are done. Kill us so we don't keep getting broadcast messages
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{

@@ -109,11 +109,11 @@ public:
 	// Ability Types->Fire_Environment
 	FGameplayTag Abilities_Fire_DelayedExplosion;
 	
-
 	// Ability Types->Lightning
 	FGameplayTag Abilities_Lightning;
 	FGameplayTag Abilities_Lightning_Electrocute;
 	FGameplayTag Abilities_Lightning_ElectroBall;
+	FGameplayTag Abilities_Lightning_ElectricalStorm;
 
 	// Ability Types->Arcane
 	FGameplayTag Abilities_Arcane;
@@ -126,6 +126,7 @@ public:
 	// Ability Cooldowns->Lightning
 	FGameplayTag Cooldown_Lightning_Electrocute;
 	FGameplayTag Cooldown_Lightning_ElectroBall;
+	FGameplayTag Cooldown_Lightning_ElectricalStorm;
 
 	// Ability Cooldowns->Arcane
 	FGameplayTag Cooldown_Arcane_ArcaneShards;

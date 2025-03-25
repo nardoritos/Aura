@@ -24,7 +24,8 @@ AAuraProjectileSphere::AAuraProjectileSphere()
 void AAuraProjectileSphere::BeginPlay()
 {
 	Super::BeginPlay();
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AAuraProjectileSphere::OnSphereOverlap);
+	if (bShouldBindToMainSphere)
+		Sphere->OnComponentBeginOverlap.AddDynamic(this, &AAuraProjectileSphere::OnSphereOverlap);
 }
 
 void AAuraProjectileSphere::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
