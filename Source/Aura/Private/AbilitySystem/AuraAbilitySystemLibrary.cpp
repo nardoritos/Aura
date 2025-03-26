@@ -221,7 +221,7 @@ void UAuraAbilitySystemLibrary::GetAbilityDescription(UDataTable* AbilityInfo, U
 				);
 			return;
 		}
-		if (Cast<UAuraRegenerativePassiveAbility>(AbilitySpec->Ability))
+		if (Cast<UAuraPassiveAbility>(AbilitySpec->Ability))
 		{
 			FormatAbilityDescriptionAtLevel(Ability, Info, Level, Description);
 			FormatAbilityDescriptionAtLevel(Ability, Info, Level, NextLevelDescription);
@@ -355,7 +355,9 @@ void UAuraAbilitySystemLibrary::FormatAbilityDescriptionAtLevel(UGameplayAbility
 		OutDescription = FText::FormatNamed(
 			OutDescription,
 			Args._Level0, Level,
-			Args._Level1, Level + 1					
+			Args._Level1, Level + 1,
+			Args._Effect0, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level, EffectMagnitude)),
+			Args._Effect1, SanitizeFloat(AbilityInfo.GetSpecialAttribute(Level + 1, EffectMagnitude))
 		);
 	}
 }
@@ -787,6 +789,34 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyRegenEffect(
 
 	return EffectContextHandle;	
 }
+
+FActiveGameplayEffectHandle UAuraAbilitySystemLibrary::ApplyIndefiniteEffect(const FIndefiniteEffectParams& IndefiniteEffectParams, bool& AppliedSuccessfully)
+{
+	if (!IndefiniteEffectParams.TargetAbilitySystemComponent)
+	{
+		AppliedSuccessfully = false;
+		return FActiveGameplayEffectHandle();
+	}
+
+	UAbilitySystemComponent* TargetToApply = IndefiniteEffectParams.TargetAbilitySystemComponent;
+	const TSubclassOf<UGameplayEffect> EffectToApply = IndefiniteEffectParams.IndefiniteEffectClass;
+	const float AbilityLevel = IndefiniteEffectParams.AbilityLevel;
+	const FScalableFloat BaseMagnitude = IndefiniteEffectParams.BaseMagnitude;
+	
+	const AActor* TargetAvatarActor = TargetToApply->GetAvatarActor();
+	FGameplayEffectContextHandle EffectContextHandle = TargetToApply->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(TargetAvatarActor);
+
+	const FGameplayEffectSpecHandle SpecHandle = TargetToApply->MakeOutgoingSpec(
+		EffectToApply, AbilityLevel, EffectContextHandle);
+
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,
+		IndefiniteEffectParams.Attribute, BaseMagnitude.GetValueAtLevel(AbilityLevel));
+
+	AppliedSuccessfully = true;
+	return TargetToApply->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+}
+
 
 TArray<FRotator> UAuraAbilitySystemLibrary::EvenlySpacedRotators(const FVector& Forward, const FVector& Axis,
                                                                  const float Spread, const int32 NumRotators)

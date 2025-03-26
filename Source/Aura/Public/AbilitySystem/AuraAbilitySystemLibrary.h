@@ -13,6 +13,7 @@ struct FRegenEffectParams;
 class ULootTiers;
 class UAuraSaveGame;
 struct FDamageEffectParams;
+struct FIndefiniteEffectParams;
 class UAuraAbilitySystemComponent;
 struct FAuraAbilityInfo;
 struct FGameplayTag;
@@ -184,6 +185,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
 	static FGameplayEffectContextHandle ApplyRegenEffect(const FRegenEffectParams& HealingEffectParams);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static FActiveGameplayEffectHandle ApplyIndefiniteEffect(const FIndefiniteEffectParams& IndefiniteEffectParams, bool& AppliedSuccessfully);
 	
 	UFUNCTION(BlueprintPure, Category = "AuraAbilitySystemLibrary|GameplayMechanics")
 	static TArray<FRotator> EvenlySpacedRotators(const FVector& Forward, const FVector& Axis, const float Spread, const int32 NumRotators);

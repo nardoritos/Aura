@@ -454,9 +454,13 @@ void UAuraGameUserSettings::Update_Resolution(const bool bOverrideResolution)
 			if (WindowModeWidget->GetCurrentWindowMode() == EWindowMode::Type::WindowedFullscreen)
 			{
 				ResolutionWidget->Disable();
+				
 				TArray<FIntPoint> SupportedFullscreenResolutions;
-		
 				UKismetSystemLibrary::GetSupportedFullscreenResolutions(SupportedFullscreenResolutions);
+
+				// This array will be cleared of resolutions higher than the monitor's 
+				TArray<FIntPoint> FinalSupportedResolutions = SupportedFullscreenResolutions;
+				
 				// The player's actual display size
 				const FIntPoint ScreenSize = FIntPoint(GSystemResolution.ResX, GSystemResolution.ResY);
 				UE_LOG(LogAura, Warning, TEXT("Player Screen is %ix%i long"), ScreenSize.X, ScreenSize.Y)
@@ -466,11 +470,10 @@ void UAuraGameUserSettings::Update_Resolution(const bool bOverrideResolution)
 				{
 					if (CurrentRes.X > ScreenSize.X || CurrentRes.Y > ScreenSize.Y)
 					{
-						SupportedFullscreenResolutions.Remove(CurrentRes);
+						FinalSupportedResolutions.Remove(CurrentRes);
 					}
 				}
-	
-				ResolutionWidget->SetAvailableResolutions(SupportedFullscreenResolutions);
+				ResolutionWidget->SetAvailableResolutions(FinalSupportedResolutions);
 				ResolutionWidget->SetCurrentResolution(GetScreenResolution());				
 			}
 			else

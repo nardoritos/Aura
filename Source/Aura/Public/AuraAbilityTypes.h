@@ -108,6 +108,27 @@ struct FDamageEffectParams
 };
 
 USTRUCT(BlueprintType)
+struct FIndefiniteEffectParams
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> IndefiniteEffectClass;
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent;
+
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTag Attribute = FGameplayTag();
+	
+	UPROPERTY(BlueprintReadWrite)
+	FScalableFloat BaseMagnitude;
+
+	UPROPERTY(BlueprintReadWrite)
+	float AbilityLevel = 1.f;
+};
+
+USTRUCT(BlueprintType)
 struct FAuraGameplayEffectContext : public FGameplayEffectContext
 {
 	GENERATED_BODY()

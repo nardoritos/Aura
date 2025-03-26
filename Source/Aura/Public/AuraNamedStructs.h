@@ -42,5 +42,7 @@ struct FAuraNamedArguments
 
 	FString _Radius0 = FString("_Radius0"); // Current Ability Radius 
 	FString _Radius1 = FString("_Radius1"); // Next Ability Radius 
-	
+
+	FString _Effect0 = FString("_Effect0"); // Current Ability Effect Magnitude 
+	FString _Effect1 = FString("_Effect1"); // Next Ability Effect Magnitude 
 };
