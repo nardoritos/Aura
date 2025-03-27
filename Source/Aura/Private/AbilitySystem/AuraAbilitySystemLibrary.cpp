@@ -741,6 +741,7 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 											DamageEffectParams.SourceAbilitySystemComponent :
 											DamageEffectParams.TargetAbilitySystemComponent;
 
+
 	// Changed from always using SourceAvatar to deciding to which one's available, so it can be used in other objects
 	const AActor* SourceAvatarActor = ASCToUse->GetAvatarActor();
 	FGameplayEffectContextHandle EffectContextHandle = ASCToUse->MakeEffectContext();
@@ -830,7 +831,7 @@ TArray<FRotator> UAuraAbilitySystemLibrary::EvenlySpacedRotators(const FVector& 
 		// Multiple Rotators
 		for (int32 i = 0; i < NumRotators; i++)
 		{
-			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i, FVector::UpVector);
+			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i, Axis);
 			Rotators.Add(Direction.Rotation());
 		}
 	}
@@ -854,7 +855,7 @@ TArray<FVector> UAuraAbilitySystemLibrary::EvenlyRotatedVectors(const FVector& F
 		// Multiple Vectors
 		for (int32 i = 0; i < NumVectors; i++)
 		{
-			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i, FVector::UpVector);
+			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i, Axis);
 			Vectors.Add(Direction);
 		}
 	}

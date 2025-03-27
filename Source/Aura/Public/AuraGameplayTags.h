@@ -119,6 +119,7 @@ public:
 	FGameplayTag Abilities_Arcane;
 	FGameplayTag Abilities_Arcane_ArcaneShards;
 	FGameplayTag Abilities_Arcane_ArcaneGun;
+	FGameplayTag Abilities_Arcane_ArcaneStorm;
 	
 	// Ability Cooldowns->Fire
 	FGameplayTag Cooldown_Fire_FireBolt;
@@ -132,6 +133,7 @@ public:
 	// Ability Cooldowns->Arcane
 	FGameplayTag Cooldown_Arcane_ArcaneShards;
 	FGameplayTag Cooldown_Arcane_ArcaneGun;
+	FGameplayTag Cooldown_Arcane_ArcaneStorm;
 	
 	// Passive Abilities
 	FGameplayTag Abilities_Passive_HaloOfProtection;

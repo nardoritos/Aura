@@ -11,6 +11,8 @@
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Character/AuraEnemy.h"
+#include "Components/SphereComponent.h"
 #include "Game/AuraGameModeBase.h"
 #include "Game/AuraSaveGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -41,6 +43,12 @@ AAuraCharacter::AAuraCharacter()
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
+	ProjectileDetection = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileDetection"));
+	ProjectileDetection->SetupAttachment(GetRootComponent());
+	ProjectileDetection->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	ProjectileDetection->SetCollisionResponseToAllChannels(ECR_Ignore);
+	ProjectileDetection->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
@@ -339,9 +347,24 @@ void AAuraCharacter::Die(const FVector& DeathImpulse, AActor* KillingActor)
 	TopDownCameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 }
 
+void AAuraCharacter::CheckForCurrentProjectileDetectionOverlaps()
+{
+	TArray<AActor*> ActorsToCheck;
+	if(!IsValid(ProjectileDetection)) return;
+	
+	ProjectileDetection->GetOverlappingActors(ActorsToCheck, AAuraEnemy::StaticClass());
+	for (auto CurrentActor : ActorsToCheck)
+	{
+		if (IsValid(CurrentActor), CurrentActor->Implements<UCombatInterface>() && CurrentActor->ActorHasTag("Enemy"))
+		{
+			OnProjectileDetectedEnemy.Broadcast(CurrentActor);
+			return;
+		}
+	}
+}
+
 void AAuraCharacter::InitAbilityActorInfo()
 {
-	
 	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
 	check (AuraPlayerState)
 	AuraPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AuraPlayerState, this);
@@ -350,6 +373,7 @@ void AAuraCharacter::InitAbilityActorInfo()
 	AttributeSet = AuraPlayerState->GetAttributeSet();
 	OnASCRegistered.Broadcast(AbilitySystemComponent);
 	AbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().Debuff_Stun, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AAuraCharacter::StunTagChanged);
+	ProjectileDetection->OnComponentBeginOverlap.AddDynamic(this, &AAuraCharacter::OnSphereOverlap);
 	
 	if(AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
 	{
@@ -358,6 +382,15 @@ void AAuraCharacter::InitAbilityActorInfo()
 			AuraHUD->InitOverlay(AuraPlayerController, AuraPlayerState, AbilitySystemComponent, AttributeSet);
 		}
 	}
+}
+
+void AAuraCharacter::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!IsValid(OtherActor)) return;
+	if (!OtherActor->ActorHasTag("Enemy")) return;
+	
+	OnProjectileDetectedEnemy.Broadcast(OtherActor);	
 }
 
 

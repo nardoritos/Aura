@@ -7,6 +7,9 @@
 #include "Interaction/PlayerInterface.h"
 #include "AuraCharacter.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FProjectileDetectionSignature, AActor* /* EnemyPawnCollided */);
+
+class USphereComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UNiagaraComponent;
@@ -62,11 +65,20 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USpringArmComponent> CameraBoom;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USphereComponent> ProjectileDetection;
+
+	FProjectileDetectionSignature OnProjectileDetectedEnemy;
+	void CheckForCurrentProjectileDetectionOverlaps();
 private:
 
 	virtual void InitAbilityActorInfo() override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLevelUpParticles() const;
+
+	UFUNCTION()
+	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

@@ -421,7 +421,11 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Arcane.ArcaneGun"),
 		FString("Arcane Gun Ability Tag")
 		);
-
+	
+	GameplayTags.Abilities_Arcane_ArcaneStorm = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.Arcane.ArcaneStorm"),
+		FString("Arcane Storm Ability Tag")
+		);
 	/*
 	 * Passive Abilities
 	 */
@@ -479,6 +483,12 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 		FName("Cooldown.Arcane.ArcaneGun"),
 		FString("Arcane Gun Cooldown Tag")
 		);
+	
+	GameplayTags.Cooldown_Arcane_ArcaneStorm = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Cooldown.Arcane.ArcaneStorm"),
+		FString("Arcane Storm Cooldown Tag")
+		);
+	
 	/* 
 	 * Combat Sockets
 	 */
