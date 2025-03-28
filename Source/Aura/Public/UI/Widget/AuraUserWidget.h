@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "AuraUserWidget.generated.h"
 
+class UTextBlock;
 /**
  * 
  */
@@ -22,6 +23,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UObject> WidgetController;
 
+	UFUNCTION(BlueprintCallable)
+	float GetTextSize(const FText Text, const FSlateFontInfo& TextFont) const;
+	
 protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
