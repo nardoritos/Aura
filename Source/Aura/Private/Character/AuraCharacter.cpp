@@ -10,8 +10,10 @@
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include "Actor/MinimapReceiverComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Character/AuraEnemy.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "Components/SphereComponent.h"
 #include "Game/AuraGameModeBase.h"
 #include "Game/AuraSaveGame.h"
@@ -53,7 +55,23 @@ AAuraCharacter::AAuraCharacter()
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 
-	CharacterClass = ECharacterClass::Elementalist; 
+	CharacterClass = ECharacterClass::Elementalist;
+
+	MinimapReceiverComponent = CreateDefaultSubobject<UMinimapReceiverComponent>(TEXT("MinimapReceiverComponent"));
+	
+}
+
+void AAuraCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if(const UAuraAttributeSet* AuraAS = Cast<UAuraAttributeSet>(AttributeSet))
+	{
+		AbilitySystemComponent->RegisterGameplayTagEvent(FAuraGameplayTags::Get().Effects_HitReact, EGameplayTagEventType::NewOrRemoved).AddUObject(
+			this,
+			&AAuraCharacter::HitReactTagChanged
+		);
+	}
 }
 
 void AAuraCharacter::PossessedBy(AController* NewController)
@@ -316,6 +334,11 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 	
 }
 
+UMinimapReceiverComponent* AAuraCharacter::GetMinimapComponent_Implementation()
+{
+	return MinimapReceiverComponent;
+}
+
 void AAuraCharacter::AddToSpellPoints_Implementation(int32 InSpellPoints)
 {
 	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
@@ -347,6 +370,11 @@ void AAuraCharacter::Die(const FVector& DeathImpulse, AActor* KillingActor)
 	TopDownCameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 }
 
+void AAuraCharacter::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	Super::HitReactTagChanged(CallbackTag, NewCount);
+}
+
 void AAuraCharacter::CheckForCurrentProjectileDetectionOverlaps()
 {
 	TArray<AActor*> ActorsToCheck;
@@ -361,6 +389,12 @@ void AAuraCharacter::CheckForCurrentProjectileDetectionOverlaps()
 			return;
 		}
 	}
+}
+
+void AAuraCharacter::SetupSceneRenderShowList()
+{
+	// UBlueprintFunctionLibrary::GetActo
+	// SceneCaptureComponent->ShowOnlyActorComponents();
 }
 
 void AAuraCharacter::InitAbilityActorInfo()

@@ -57,7 +57,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnAttributeChangedSignature OnMaxHealthChanged;
 	
-	void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
+	virtual void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bHitReacting = false;
@@ -72,7 +72,7 @@ public:
 	TObjectPtr<AActor> KillingActor;
 	
 	void SetLevel(int32 InLevel) {Level = InLevel;}
-	
+
 protected:
 
 	virtual void BeginPlay() override;

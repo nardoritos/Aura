@@ -35,6 +35,7 @@ void UAuraWidgetController::BroadcastAbilityInfo()
 	FForEachAbility BroadcastDelegate;
 	BroadcastDelegate.BindLambda([this](const FGameplayAbilitySpec& AbilitySpec)
 	{
+	//	if UAuraAbilitySystemComponent::GetAbilityTagFromSpec(AbilitySpec))
 		FAuraAbilityInfo Info = *UAuraAbilitySystemLibrary::GetDataTableRowByTag<FAuraAbilityInfo>(
 			AbilityInfo,
 			UAuraAbilitySystemComponent::GetAbilityTagFromSpec(AbilitySpec));

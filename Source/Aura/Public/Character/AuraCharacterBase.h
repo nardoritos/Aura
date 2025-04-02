@@ -9,6 +9,7 @@
 #include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
 
+class USpringArmComponent;
 class UPassiveNiagaraComponent;
 class UDebuffNiagaraComponent;
 class UNiagaraSystem;
@@ -126,6 +127,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Aura|Attributes")
 	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;
+
+	virtual void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
 	
 	void ApplyEffectToSelf(const TSubclassOf<UGameplayEffect>& GameplayEffectClass, float Level) const;
 	virtual void InitializeDefaultAttributes() const;

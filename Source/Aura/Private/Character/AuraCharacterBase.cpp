@@ -8,6 +8,7 @@
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 #include "Aura/Aura.h"
+#include "Components/BillboardComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -257,6 +258,10 @@ void AAuraCharacterBase::SetIsBeingShocked_Implementation(const bool bInIsBeingS
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()
+{
+}
+
+void AAuraCharacterBase::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
 {
 }
 

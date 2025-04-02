@@ -11,6 +11,7 @@
 #include "AbilitySystem/Abilities/AuraDamageGameplayAbility.h"
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "AbilitySystem/Abilities/AuraRegenerativePassiveAbility.h"
+#include "Aura/Aura.h"
 #include "Engine/OverlapResult.h"
 #include "Game/AuraGameModeBase.h"
 #include "Game/AuraSaveGame.h"
@@ -646,7 +647,6 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 {
 	FCollisionQueryParams SphereParams;
 	SphereParams.AddIgnoredActors(ActorsToIgnore);
-
 	
 	if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode()))
 	{
@@ -657,6 +657,7 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 			FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects),
 			FCollisionShape::MakeSphere(Radius),
 			SphereParams);
+		
 		if (DrawDebug)
 		{
 			UKismetSystemLibrary::DrawDebugSphere(
@@ -670,13 +671,13 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 		}
 		for (FOverlapResult& Overlap : Overlaps)
 		{
-
 			if (Overlap.GetActor()->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsDead(Overlap.GetActor()))
 			{
-				OutOverlappingActors.AddUnique(ICombatInterface::Execute_GetAvatar(Overlap.GetActor()));
+				if (Overlap.GetComponent()->GetCollisionObjectType() != ECC_ENEMY_DETECTOR)
+				{
+					OutOverlappingActors.AddUnique(ICombatInterface::Execute_GetAvatar(Overlap.GetActor()));
+				}
 			}
-
-			
 		}
 	}
 	

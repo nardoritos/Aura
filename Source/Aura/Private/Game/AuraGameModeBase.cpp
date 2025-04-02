@@ -4,7 +4,9 @@
 #include "Game/AuraGameModeBase.h"
 
 #include "EngineUtils.h"
+#include "Actor/MinimapReceiverComponent.h"
 #include "Aura/AuraLogChannels.h"
+#include "Character/AuraCharacter.h"
 #include "Game/AuraGameInstance.h"
 #include "Game/AuraGameUserSettings.h"
 #include "Game/AuraSaveGame.h"
@@ -177,16 +179,15 @@ void AAuraGameModeBase::LoadWorldState(UWorld* World) const
 void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 {
 	const FString SlotName = Slot->GetLoadSlotName();
-	const int32 SlotIndex = Slot->SlotIndex;
-	
-	UGameplayStatics::OpenLevelBySoftObjectPtr(Slot, Maps.FindChecked(Slot->GetMapName()));
+		
+	UGameplayStatics::OpenLevelBySoftObjectPtr(Slot, Maps.FindChecked(Slot->GetMapName()).Map);
 }
 
 FString AAuraGameModeBase::GetMapNameFromMapAssetName(const FString& MapAssetName) const
 {
 	for (auto& Map : Maps)
 	{
-		if (Map.Value.ToSoftObjectPath().GetAssetName() == MapAssetName)
+		if (Map.Value.Map.ToSoftObjectPath().GetAssetName() == MapAssetName)
 		{
 			return Map.Key;
 		}
@@ -244,12 +245,40 @@ void AAuraGameModeBase::LoadAudioSettings() const
 	}
 }
 
+void AAuraGameModeBase::TryApplyMinimapToPlayers()
+{
+	FString WorldName = GetWorld()->GetMapName();
+	WorldName.RemoveFromStart(GetWorld()->StreamingLevelsPrefix);
+	CurrentMap = WorldName;
+	
+	TArray<AActor*> OutActors;
+ 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAuraCharacter::StaticClass(), OutActors);
+
+	for (AActor* Actor : OutActors)
+	{
+		if (AAuraCharacter* Player = Cast<AAuraCharacter>(Actor); Player->Implements<UPlayerInterface>())
+		{
+			for (auto Pair : Maps)
+			{
+				if (Pair.Value.InternalName == CurrentMap)
+				{
+					UMinimapReceiverComponent* MinimapComponent = IPlayerInterface::Execute_GetMinimapComponent(Player);
+					MinimapComponent->SetMinimapInstance(Pair.Value.MinimapInstance);
+					break;
+				}
+			}
+		}
+	}
+}
+
 void AAuraGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 	LoadAudioSettings();
-		
-	Maps.Add(DefaultMapName, DefaultMap);
+	
+//	Maps.Add(DefaultMapName, FMapSetting{DefaultMapInternalName, DefaultMap, nullptr});
+
+	TryApplyMinimapToPlayers();
 }
 
 void AAuraGameModeBase::ApplyMasterVolume(const float InMasterVolume) const

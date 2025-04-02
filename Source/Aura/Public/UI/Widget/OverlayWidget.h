@@ -15,13 +15,13 @@ class AURA_API UOverlayWidget : public UAuraUserWidget
 	GENERATED_BODY()
 
 public:
-	
+	/* Pause Menu */
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void UpdatePauseMenuState(bool bShouldOpenMenu);
-
+	
 	UFUNCTION(BlueprintCallable)
 	void HandlePauseMenu();
-
+	
 	UPROPERTY(BlueprintReadOnly)
 	bool bPauseMenuOpen = false;
 };

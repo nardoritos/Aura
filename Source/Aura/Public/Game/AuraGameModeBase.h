@@ -13,6 +13,24 @@ class UMVVM_LoadSlot;
 class AAbilityInfo;
 class UCharacterClassInfo;
 
+USTRUCT(BlueprintType)
+struct FMapSetting
+{
+	GENERATED_BODY()
+
+public:
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Map Settings")
+	FString InternalName = FString();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Map Settings")
+	TSoftObjectPtr<UWorld> Map;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Map Settings")
+	TObjectPtr<UMaterialInstance> MinimapInstance;
+	
+};
+
 /**
  * 
  */
@@ -50,14 +68,20 @@ public:
 	FString DefaultMapName;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Aura|Maps")
+	FString DefaultMapInternalName = FString();
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Aura|Maps")
 	TSoftObjectPtr<UWorld> DefaultMap;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Aura|Maps")
 	FName DefaultPlayerStartTag;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Aura|Maps")
-	TMap<FString, TSoftObjectPtr<UWorld>> Maps;
+	TMap<FString, FMapSetting> Maps;
 
+	UPROPERTY()
+	FString CurrentMap = FString();
+	
 	FString GetMapNameFromMapAssetName(const FString& MapAssetName) const;
 	
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
@@ -66,6 +90,9 @@ public:
 
 	void LoadAudioSettings() const;
 
+	void TryApplyMinimapToPlayers();
+	
+	
 protected:
 	virtual void BeginPlay() override;
 

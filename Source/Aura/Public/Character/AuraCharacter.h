@@ -7,6 +7,7 @@
 #include "Interaction/PlayerInterface.h"
 #include "AuraCharacter.generated.h"
 
+class UMinimapReceiverComponent;
 DECLARE_MULTICAST_DELEGATE_OneParam(FProjectileDetectionSignature, AActor* /* EnemyPawnCollided */);
 
 class USphereComponent;
@@ -23,6 +24,8 @@ class AURA_API AAuraCharacter : public AAuraCharacterBase, public IPlayerInterfa
 
 public:
 	AAuraCharacter();
+
+	virtual void BeginPlay() override;
 	
 	virtual void PossessedBy(AController* NewController) override;
 	void LoadProgress();
@@ -45,6 +48,7 @@ public:
 	virtual void ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial = nullptr) override;
 	virtual void HideMagicCircle_Implementation() override;
 	virtual void SaveProgress_Implementation(const FName& CheckpointTag) override;
+	virtual UMinimapReceiverComponent* GetMinimapComponent_Implementation() override;
 	/** End Player Interface */
 	
 	/** Combat Interface */
@@ -56,6 +60,8 @@ public:
 	float DeathTime = 5.f;
 
 	FTimerHandle DeathTimer;
+
+	virtual void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
@@ -65,14 +71,20 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USpringArmComponent> CameraBoom;
-
+		
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USphereComponent> ProjectileDetection;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UMinimapReceiverComponent> MinimapReceiverComponent;
+	
 	FProjectileDetectionSignature OnProjectileDetectedEnemy;
-	void CheckForCurrentProjectileDetectionOverlaps();
+	void CheckForCurrentProjectileDetectionOverlaps(); 
+	
 private:
 
+	void SetupSceneRenderShowList();
+	
 	virtual void InitAbilityActorInfo() override;
 
 	UFUNCTION(NetMulticast, Reliable)

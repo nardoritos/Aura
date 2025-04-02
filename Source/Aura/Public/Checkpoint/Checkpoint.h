@@ -9,6 +9,7 @@
 #include "Interaction/SaveInterface.h"
 #include "Checkpoint.generated.h"
 
+class UMinimapTrackerComponent;
 class AAuraEnemySpawnVolume;
 class AAuraEnemy;
 class USphereComponent;
@@ -84,4 +85,16 @@ protected:
 
 	UPROPERTY()
 	TMap<TObjectPtr<AAuraEnemySpawnVolume>, bool> EnemyVolumesState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Checkpoint")
+	TObjectPtr<UMinimapTrackerComponent> MinimapTrackerComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UTexture> ActiveSprite;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UTexture> UnactiveSprite;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UTexture> UsedSprite;
 };

@@ -12,14 +12,11 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Actor/MagicCircle.h"
 #include "Aura/Aura.h"
-#include "Aura/AuraLogChannels.h"
 #include "Components/DecalComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
-#include "GameFramework/Character.h"
 #include "Interaction/HighlightInterface.h"
-#include "Kismet/GameplayStatics.h"
 #include "UI/HUD/AuraHUD.h"
 #include "UI/Widget/DamageTextComponent.h"
 
@@ -271,6 +268,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 			{
 				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ClickNiagaraSystem, CachedDestination);
 			}
+			
 			if(UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this,
 				ControlledPawn->GetActorLocation(),CachedDestination))
 			{

@@ -62,4 +62,3 @@ void AAuraHUD::HandlePauseMenu()
 {
 	OverlayWidget->HandlePauseMenu();
 }
-

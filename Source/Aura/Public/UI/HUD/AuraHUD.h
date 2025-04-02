@@ -33,6 +33,7 @@ public:
 	void InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS);
 
 	void HandlePauseMenu();
+	
 private:
 
 	UPROPERTY()

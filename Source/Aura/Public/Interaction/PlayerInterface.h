@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "PlayerInterface.generated.h"
 
+class UMinimapReceiverComponent;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UPlayerInterface : public UInterface
@@ -64,5 +65,8 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SaveProgress(const FName& CheckpointTag);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UMinimapReceiverComponent* GetMinimapComponent();
 	
 };

@@ -4,9 +4,8 @@
 #include "Checkpoint/Checkpoint.h"
 
 #include "Actor/AuraEnemySpawnVolume.h"
-#include "Character/AuraEnemy.h"
+#include "Actor/MinimapTrackerComponent.h"
 #include "Components/SphereComponent.h"
-#include "Components/Widget.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/PlayerInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,6 +30,9 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer)
 
 	MoveToComponent = CreateDefaultSubobject<USceneComponent>("MoveToComponent");
 	MoveToComponent->SetupAttachment(GetRootComponent());
+
+	MinimapTrackerComponent = CreateDefaultSubobject<UMinimapTrackerComponent>("MinimapTrackerComponent");
+	
 }
 
 void ACheckpoint::LoadActor_Implementation()
@@ -38,12 +40,14 @@ void ACheckpoint::LoadActor_Implementation()
 	if (bReached)
 	{
 		HandleGlowEffects();
+		MinimapTrackerComponent->SetSprite(UsedSprite);
 	}
 	else
 	{
 		if (!bHasRegisteredSpawnVolumes)
 		{
 			RegisterSpawnVolumes();
+			
 		}
 		CheckEnabledState();
 	}
@@ -74,7 +78,8 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	if (OtherActor->Implements<UPlayerInterface>())
 	{
 		bReached = true;
-
+		MinimapTrackerComponent->SetSprite(UsedSprite);
+		
 		if(AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 		{
 			UWorld* World= GetWorld();
@@ -99,12 +104,14 @@ void ACheckpoint::CheckEnabledState()
 			// Volume still has enemies spawned, disable collision and Checkpoint
 			Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			bIsCheckpointEnabled = false;
+			MinimapTrackerComponent->SetSprite(UnactiveSprite);
 			UpdateEnabledState(bIsCheckpointEnabled);
 			return;
 		}
 	}
 	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	bIsCheckpointEnabled = true;
+	MinimapTrackerComponent->SetSprite(ActiveSprite);
 	UpdateEnabledState(bIsCheckpointEnabled);
 
 }
